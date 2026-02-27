@@ -1,7 +1,7 @@
-import { Heart, Gamepad2, Flame, Camera } from "lucide-react";
+import { Heart, Gamepad2, Flame, Camera, Search } from "lucide-react";
 import { motion } from "framer-motion";
 
-export type AppTab = "mood" | "camera" | "games" | "tracker";
+export type AppTab = "mood" | "search" | "camera" | "games" | "tracker";
 
 interface BottomNavProps {
   active: AppTab;
@@ -10,6 +10,7 @@ interface BottomNavProps {
 
 const tabs: { id: AppTab; label: string; icon: typeof Heart }[] = [
   { id: "mood", label: "Mood", icon: Heart },
+  { id: "search", label: "Search", icon: Search },
   { id: "camera", label: "Scan", icon: Camera },
   { id: "games", label: "Play", icon: Gamepad2 },
   { id: "tracker", label: "Commit", icon: Flame },

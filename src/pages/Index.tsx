@@ -3,7 +3,8 @@ import { Mood } from "@/data/bibleVerses";
 import BottomNav, { AppTab } from "@/components/BottomNav";
 import MoodSelector from "@/components/MoodSelector";
 import VerseDisplay from "@/components/VerseDisplay";
-import BibleTrivia from "@/components/BibleTrivia";
+import VerseSearch from "@/components/VerseSearch";
+import GamesHub from "@/components/GamesHub";
 import CommitmentTracker from "@/components/CommitmentTracker";
 import CameraScanner from "@/components/CameraScanner";
 import heroImage from "@/assets/hero-sunrise.png";
@@ -51,14 +52,9 @@ const Index = () => {
             {tab === "mood" && selectedMood && (
               <VerseDisplay mood={selectedMood} onBack={() => setSelectedMood(null)} />
             )}
+            {tab === "search" && <VerseSearch />}
             {tab === "camera" && <CameraScanner />}
-            {tab === "games" && (
-              <div>
-                <h2 className="font-display text-2xl text-center mb-2 text-foreground">Bible Trivia</h2>
-                <p className="text-center text-muted-foreground font-body mb-8 text-sm">Test your knowledge — it's fun, not a test! 🎯</p>
-                <BibleTrivia />
-              </div>
-            )}
+            {tab === "games" && <GamesHub />}
             {tab === "tracker" && (
               <div>
                 <h2 className="font-display text-2xl text-center mb-2 text-foreground">Your Journey</h2>
