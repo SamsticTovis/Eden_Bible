@@ -14,7 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          verse_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          verse_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          verse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_verse_id_fkey"
+            columns: ["verse_id"]
+            isOneToOne: false
+            referencedRelation: "verses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_questions: {
+        Row: {
+          correct_option: string
+          created_at: string
+          difficulty: string
+          game_type: string
+          id: string
+          option_a: string
+          option_b: string
+          option_c: string
+          question: string
+        }
+        Insert: {
+          correct_option: string
+          created_at?: string
+          difficulty?: string
+          game_type?: string
+          id?: string
+          option_a: string
+          option_b: string
+          option_c: string
+          question: string
+        }
+        Update: {
+          correct_option?: string
+          created_at?: string
+          difficulty?: string
+          game_type?: string
+          id?: string
+          option_a?: string
+          option_b?: string
+          option_c?: string
+          question?: string
+        }
+        Relationships: []
+      }
+      verses: {
+        Row: {
+          book: string | null
+          created_at: string
+          id: string
+          mood: string | null
+          reference: string
+          tags: string[]
+          text: string
+          version: string
+        }
+        Insert: {
+          book?: string | null
+          created_at?: string
+          id?: string
+          mood?: string | null
+          reference: string
+          tags?: string[]
+          text: string
+          version?: string
+        }
+        Update: {
+          book?: string | null
+          created_at?: string
+          id?: string
+          mood?: string | null
+          reference?: string
+          tags?: string[]
+          text?: string
+          version?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
