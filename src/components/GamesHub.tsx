@@ -1,33 +1,34 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Brain, Shuffle, BookMarked } from "lucide-react";
+import { ArrowLeft, Brain, Shuffle, Smile } from "lucide-react";
 import TriviaChallenge from "./games/TriviaChallenge";
 import VerseScramble from "./games/VerseScramble";
-import GuessTheBook from "./games/GuessTheBook";
+import EmojiParables from "./games/EmojiParables";
+import { addManna } from "./MannaTracker";
 
-type GameMode = "menu" | "trivia" | "scramble" | "guess";
+type GameMode = "menu" | "trivia" | "scramble" | "emoji";
 
 const games = [
   {
     id: "trivia" as const,
-    title: "Trivia Challenge",
-    description: "Test your Bible knowledge with fun multiple choice questions!",
+    title: "Trivia Blitz",
+    description: "Test your Bible knowledge with 4-option multiple choice!",
     icon: Brain,
     emoji: "🧠",
   },
   {
     id: "scramble" as const,
     title: "Verse Scramble",
-    description: "Unscramble the words to reveal the verse!",
+    description: "Tap the words in order to rebuild the verse!",
     icon: Shuffle,
     emoji: "🔀",
   },
   {
-    id: "guess" as const,
-    title: "Guess the Book",
-    description: "Which book of the Bible is this famous verse from?",
-    icon: BookMarked,
-    emoji: "📚",
+    id: "emoji" as const,
+    title: "Emoji Parables",
+    description: "Guess the Bible story from emojis — no words needed!",
+    icon: Smile,
+    emoji: "😎",
   },
 ];
 
@@ -41,7 +42,7 @@ const GamesHub = () => {
           <motion.div key="menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <h2 className="font-display text-2xl text-center mb-2 text-foreground">Games Hub</h2>
             <p className="text-center text-muted-foreground font-body mb-8 text-sm">
-              Learn the Bible while having fun — no pressure! 🎮
+              Learn the Bible while having fun — earn Manna! 🎮
             </p>
             <div className="flex flex-col gap-4">
               {games.map((game, i) => (
@@ -74,7 +75,7 @@ const GamesHub = () => {
             </button>
             {mode === "trivia" && <TriviaChallenge />}
             {mode === "scramble" && <VerseScramble />}
-            {mode === "guess" && <GuessTheBook />}
+            {mode === "emoji" && <EmojiParables />}
           </motion.div>
         )}
       </AnimatePresence>

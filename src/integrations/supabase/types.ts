@@ -53,6 +53,7 @@ export type Database = {
           option_a: string
           option_b: string
           option_c: string
+          option_d: string
           question: string
         }
         Insert: {
@@ -64,6 +65,7 @@ export type Database = {
           option_a: string
           option_b: string
           option_c: string
+          option_d?: string
           question: string
         }
         Update: {
@@ -75,6 +77,7 @@ export type Database = {
           option_a?: string
           option_b?: string
           option_c?: string
+          option_d?: string
           question?: string
         }
         Relationships: []
