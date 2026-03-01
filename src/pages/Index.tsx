@@ -3,11 +3,12 @@ import { Mood } from "@/data/bibleVerses";
 import BottomNav, { AppTab } from "@/components/BottomNav";
 import MoodSelector from "@/components/MoodSelector";
 import VerseDisplay from "@/components/VerseDisplay";
-import VerseSearch from "@/components/VerseSearch";
+import BibleReader from "@/components/BibleReader";
 import GamesHub from "@/components/GamesHub";
 import CommitmentTracker from "@/components/CommitmentTracker";
 import CameraScanner from "@/components/CameraScanner";
-import heroImage from "@/assets/hero-sunrise.png";
+import EdenMascot from "@/components/EdenMascot";
+import MannaTracker from "@/components/MannaTracker";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Index = () => {
@@ -16,24 +17,19 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <header className="relative overflow-hidden">
-        <div className="absolute inset-0">
-          <img src={heroImage} alt="Warm sunrise" className="w-full h-full object-cover opacity-30" />
-          <div className="absolute inset-0 bg-gradient-warm" style={{ opacity: 0.7 }} />
-        </div>
-        <div className="relative px-6 pt-10 pb-8 text-center">
+      {/* Header with Eden + Manna */}
+      <header className="bg-card border-b border-border">
+        <div className="flex items-center justify-between px-4 pt-8 pb-1">
           <motion.h1
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="font-display text-3xl sm:text-4xl text-foreground mb-1"
+            className="font-display text-xl text-foreground"
           >
-            SoulShine ✨
+            Eden Bible ✨
           </motion.h1>
-          <p className="font-body text-muted-foreground text-sm">
-            God's Word for every moment
-          </p>
+          <MannaTracker />
         </div>
+        <EdenMascot tab={tab} />
       </header>
 
       {/* Content */}
@@ -52,7 +48,7 @@ const Index = () => {
             {tab === "mood" && selectedMood && (
               <VerseDisplay mood={selectedMood} onBack={() => setSelectedMood(null)} />
             )}
-            {tab === "search" && <VerseSearch />}
+            {tab === "read" && <BibleReader />}
             {tab === "camera" && <CameraScanner />}
             {tab === "games" && <GamesHub />}
             {tab === "tracker" && (
