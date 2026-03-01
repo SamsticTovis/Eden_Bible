@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Playfair Display', 'Georgia', 'serif'],
-        body: ['Source Sans 3', 'system-ui', 'sans-serif'],
+        display: ['Nunito', 'system-ui', 'sans-serif'],
+        body: ['Quicksand', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -61,6 +61,14 @@ export default {
           peace: "hsl(var(--peace))",
           comfort: "hsl(var(--comfort))",
           hope: "hsl(var(--hope))",
+        },
+        eden: {
+          green: "hsl(var(--eden-green))",
+          yellow: "hsl(var(--eden-yellow))",
+          orange: "hsl(var(--eden-orange))",
+          blue: "hsl(var(--eden-blue))",
+          purple: "hsl(var(--eden-purple))",
+          red: "hsl(var(--eden-red))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
