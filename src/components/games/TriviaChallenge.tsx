@@ -16,8 +16,8 @@ interface Question {
 }
 
 const encouragements = {
-  correct: ["Nailed it! 🎯", "You know your Word! 📖", "On fire! 🔥", "That's right! ✨"],
-  wrong: ["So close! You'll get it next time 💪", "Good guess! Now you know 📚", "Learning is winning! 🌱"],
+  correct: ["Nailed it! 🎯", "You know your Word! 📖", "On fire! 🔥", "That's right! ✨", "Bible scholar! 🏆"],
+  wrong: ["So close! You'll get it next time 💪", "Good guess! Now you know 📚", "Learning is winning! 🌱", "No worries — you're growing! ✨"],
 };
 
 const TriviaChallenge = () => {
@@ -28,12 +28,21 @@ const TriviaChallenge = () => {
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { loadQuestions(); }, []);
+  useEffect(() => {
+    loadQuestions();
+  }, []);
 
   const loadQuestions = async () => {
     setLoading(true);
-    const { data } = await supabase.from("game_questions").select("*").eq("game_type", "trivia");
-    if (data) setQuestions([...data].sort(() => Math.random() - 0.5).slice(0, 7));
+    const { data } = await supabase
+      .from("game_questions")
+      .select("*")
+      .eq("game_type", "trivia");
+    
+    if (data) {
+      const shuffled = [...data].sort(() => Math.random() - 0.5).slice(0, 7);
+      setQuestions(shuffled);
+    }
     setLoading(false);
   };
 
@@ -59,25 +68,46 @@ const TriviaChallenge = () => {
   };
 
   const handleNext = () => {
-    if (currentIndex + 1 >= questions.length) setFinished(true);
-    else { setCurrentIndex((i) => i + 1); setSelected(null); }
+    if (currentIndex + 1 >= questions.length) {
+      setFinished(true);
+    } else {
+      setCurrentIndex((i) => i + 1);
+      setSelected(null);
+    }
   };
 
   const handleRestart = () => {
-    loadQuestions(); setCurrentIndex(0); setSelected(null); setScore(0); setFinished(false);
+    loadQuestions();
+    setCurrentIndex(0);
+    setSelected(null);
+    setScore(0);
+    setFinished(false);
   };
 
-  if (loading) return <div className="text-center py-8"><div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full mx-auto" /></div>;
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto" />
+      </div>
+    );
+  }
 
   if (finished) {
     const pct = Math.round((score / questions.length) * 100);
     return (
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
-        <div className="text-5xl mb-3">{pct >= 80 ? "🏆" : pct >= 50 ? "⭐" : "📖"}</div>
-        <h3 className="font-display text-xl font-bold mb-1 text-foreground">{pct >= 80 ? "Bible Scholar!" : pct >= 50 ? "Great job!" : "Keep learning!"}</h3>
-        <p className="text-muted-foreground font-body text-sm mb-4">{score} of {questions.length} correct</p>
-        <Button onClick={handleRestart} size="sm" className="gap-2 bg-primary/15 text-primary hover:bg-primary/25 border-0">
-          <RotateCcw size={14} /> Play Again
+        <div className="text-6xl mb-4">{pct >= 80 ? "🏆" : pct >= 50 ? "⭐" : "📖"}</div>
+        <h3 className="font-display text-2xl mb-2 text-foreground">
+          {pct >= 80 ? "Bible Scholar!" : pct >= 50 ? "Great job!" : "Keep learning!"}
+        </h3>
+        <p className="text-muted-foreground font-body mb-2">
+          You got {score} out of {questions.length} correct
+        </p>
+        <p className="text-muted-foreground font-body text-sm mb-6">
+          {pct >= 80 ? "You really know your stuff! 🔥" : pct >= 50 ? "You're getting there — try again to beat your score!" : "Every question you learn makes you stronger in the Word 💪"}
+        </p>
+        <Button onClick={handleRestart} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+          <RotateCcw size={16} /> Play Again
         </Button>
       </motion.div>
     );
@@ -87,33 +117,46 @@ const TriviaChallenge = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-xs text-muted-foreground font-body">{currentIndex + 1} / {questions.length}</span>
-        <div className="flex items-center gap-1"><Sparkles size={12} className="text-primary" /><span className="text-xs font-medium text-primary">{score}</span></div>
+      <div className="flex items-center justify-between mb-6">
+        <span className="text-sm text-muted-foreground font-body">
+          {currentIndex + 1} / {questions.length}
+        </span>
+        <div className="flex items-center gap-1.5">
+          <Sparkles size={14} className="text-primary" />
+          <span className="text-sm font-body font-medium text-primary">{score} pts</span>
+        </div>
       </div>
 
-      <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-medium mb-3 ${
+      {/* Difficulty badge */}
+      <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-body font-medium mb-3 ${
         question.difficulty === "easy" ? "bg-primary/10 text-primary" :
-        question.difficulty === "medium" ? "bg-secondary/10 text-secondary" : "bg-destructive/10 text-destructive"
-      }`}>{question.difficulty}</span>
+        question.difficulty === "medium" ? "bg-accent/10 text-accent" :
+        "bg-destructive/10 text-destructive"
+      }`}>
+        {question.difficulty}
+      </span>
 
       <AnimatePresence mode="wait">
         <motion.div key={currentIndex} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-          <h3 className="font-display text-base font-semibold mb-4 text-foreground">{question.question}</h3>
-          <div className="flex flex-col gap-2">
+          <h3 className="font-display text-xl mb-5 text-foreground">{question.question}</h3>
+          <div className="flex flex-col gap-3">
             {options.map(({ key, text }) => {
-              let cls = "glass hover:border-primary/30";
+              let cls = "bg-card border-border hover:border-primary/50";
               if (selected) {
-                if (key === question.correct_option) cls = "bg-primary/10 border-primary/30";
-                else if (key === selected) cls = "bg-destructive/10 border-destructive/30";
+                if (key === question.correct_option) cls = "bg-primary/10 border-primary/40";
+                else if (key === selected) cls = "bg-accent/10 border-accent/40";
               }
               return (
-                <button key={key} onClick={() => handleSelect(key)} disabled={!!selected}
-                  className={`p-3 rounded-xl text-left font-body text-sm transition-all ${cls} ${!selected ? "cursor-pointer active:scale-[0.98]" : ""}`}>
+                <button
+                  key={key}
+                  onClick={() => handleSelect(key)}
+                  disabled={!!selected}
+                  className={`p-4 rounded-xl border-2 text-left font-body transition-all ${cls} ${!selected ? "cursor-pointer active:scale-[0.98]" : ""}`}
+                >
                   <div className="flex items-center justify-between">
-                    <span className="text-foreground/85">{text}</span>
-                    {selected && key === question.correct_option && <CheckCircle2 size={16} className="text-primary" />}
-                    {selected && key === selected && key !== question.correct_option && <XCircle size={16} className="text-destructive" />}
+                    <span className="text-foreground">{text}</span>
+                    {selected && key === question.correct_option && <CheckCircle2 size={20} className="text-primary" />}
+                    {selected && key === selected && key !== question.correct_option && <XCircle size={20} className="text-accent" />}
                   </div>
                 </button>
               );
@@ -121,12 +164,12 @@ const TriviaChallenge = () => {
           </div>
 
           {selected && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
-              <div className="bg-gradient-golden rounded-xl p-3 mb-3">
-                <p className="font-body text-foreground/70 text-xs">{feedback}</p>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
+              <div className="bg-gradient-golden rounded-xl p-4 mb-4">
+                <p className="font-body text-foreground/80 text-sm">{feedback}</p>
               </div>
-              <Button onClick={handleNext} size="sm" className="w-full gap-2 bg-primary/15 text-primary hover:bg-primary/25 border-0">
-                {currentIndex + 1 >= questions.length ? "See Results" : "Next"} <ChevronRight size={14} />
+              <Button onClick={handleNext} className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                {currentIndex + 1 >= questions.length ? "See Results" : "Next"} <ChevronRight size={16} />
               </Button>
             </motion.div>
           )}

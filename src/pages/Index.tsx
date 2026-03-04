@@ -1,90 +1,68 @@
-import { useState, useCallback } from "react";
-import EdenMascot, { EdenMood } from "@/components/EdenMascot";
-import SmartSearch from "@/components/SmartSearch";
-import BibleReaderView from "@/components/BibleReaderView";
-import VerseOfTheDay from "@/components/VerseOfTheDay";
-import GamesDrawer from "@/components/GamesDrawer";
-import MoodScanOverlay from "@/components/MoodScanOverlay";
-import TranslationPicker from "@/components/TranslationPicker";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { Mood } from "@/data/bibleVerses";
+import BottomNav, { AppTab } from "@/components/BottomNav";
+import MoodSelector from "@/components/MoodSelector";
+import VerseDisplay from "@/components/VerseDisplay";
+import BibleReader from "@/components/BibleReader";
+import GamesHub from "@/components/GamesHub";
+import CommitmentTracker from "@/components/CommitmentTracker";
+import CameraScanner from "@/components/CameraScanner";
+import EdenMascot from "@/components/EdenMascot";
+import MannaTracker from "@/components/MannaTracker";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Index = () => {
-  const [translation, setTranslation] = useState("BSB");
-  const [activeChapter, setActiveChapter] = useState<{ book: string; chapter: number } | null>(null);
-  const [edenMessage, setEdenMessage] = useState<string | undefined>();
-  const [edenMood, setEdenMood] = useState<EdenMood>("default");
-  const [moodScanOpen, setMoodScanOpen] = useState(false);
-
-  const handleLoadChapter = useCallback((book: string, chapter: number) => {
-    setActiveChapter({ book, chapter });
-  }, []);
-
-  const handleChapterChange = useCallback((bookId: string, chapter: number) => {
-    setActiveChapter({ book: bookId, chapter });
-  }, []);
-
-  const handleEdenMessage = useCallback((msg: string) => setEdenMessage(msg), []);
-
-  const handleGameReact = useCallback((mood: "happy" | "thinking" | "cheering" | "sad", message: string) => {
-    setEdenMood(mood);
-    setEdenMessage(message);
-    setTimeout(() => setEdenMood("default"), 3000);
-  }, []);
-
-  const handleMoodReact = useCallback((mood: "happy" | "sad", message: string) => {
-    setEdenMood(mood);
-    setEdenMessage(message);
-  }, []);
+  const [tab, setTab] = useState<AppTab>("mood");
+  const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="glass-strong sticky top-0 z-40">
-        <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between px-4 pt-5 pb-0">
-            <div className="flex-1" />
-            <TranslationPicker value={translation} onChange={setTranslation} />
-          </div>
-          <EdenMascot
-            message={edenMessage}
-            mood={edenMood}
-            onScanMood={() => setMoodScanOpen(true)}
-          />
+    <div className="min-h-screen bg-background pb-20">
+      {/* Header with Eden + Manna */}
+      <header className="bg-card border-b border-border">
+        <div className="flex items-center justify-between px-4 pt-8 pb-1">
+          <motion.h1
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-display text-xl text-foreground"
+          >
+            Eden Bible ✨
+          </motion.h1>
+          <MannaTracker />
         </div>
+        <EdenMascot tab={tab} />
       </header>
 
-      {/* Main content */}
-      <main className="max-w-lg mx-auto px-4 py-4 pb-28">
-        <SmartSearch onLoadChapter={handleLoadChapter} translation={translation} />
-
-        <div className="mt-4">
-          {activeChapter ? (
-            <motion.div key={`${activeChapter.book}-${activeChapter.chapter}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <div className="flex items-center justify-between mb-3">
-                <button
-                  onClick={() => setActiveChapter(null)}
-                  className="text-primary font-body font-medium text-sm hover:underline"
-                >
-                  ← Back to Home
-                </button>
+      {/* Content */}
+      <main className="px-5 py-6">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab + (selectedMood || "")}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {tab === "mood" && !selectedMood && (
+              <MoodSelector onSelect={setSelectedMood} />
+            )}
+            {tab === "mood" && selectedMood && (
+              <VerseDisplay mood={selectedMood} onBack={() => setSelectedMood(null)} />
+            )}
+            {tab === "read" && <BibleReader />}
+            {tab === "camera" && <CameraScanner />}
+            {tab === "games" && <GamesHub />}
+            {tab === "tracker" && (
+              <div>
+                <h2 className="font-display text-2xl text-center mb-2 text-foreground">Your Journey</h2>
+                <p className="text-center text-muted-foreground font-body mb-8 text-sm">Small steps, big faith 🌱</p>
+                <CommitmentTracker />
               </div>
-              <BibleReaderView
-                book={activeChapter.book}
-                chapter={activeChapter.chapter}
-                translation={translation}
-                onChapterChange={handleChapterChange}
-                onEdenMessage={handleEdenMessage}
-              />
-            </motion.div>
-          ) : (
-            <VerseOfTheDay />
-          )}
-        </div>
-
-        <GamesDrawer onEdenReact={handleGameReact} />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
-      <MoodScanOverlay open={moodScanOpen} onClose={() => setMoodScanOpen(false)} onEdenReact={handleMoodReact} />
+      <BottomNav active={tab} onChange={(t) => { setTab(t); setSelectedMood(null); }} />
     </div>
   );
 };

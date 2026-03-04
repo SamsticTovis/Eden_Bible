@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Inter', 'system-ui', 'sans-serif'],
-        body: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Playfair Display', 'Georgia', 'serif'],
+        body: ['Source Sans 3', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -62,14 +62,6 @@ export default {
           comfort: "hsl(var(--comfort))",
           hope: "hsl(var(--hope))",
         },
-        eden: {
-          green: "hsl(var(--eden-green))",
-          yellow: "hsl(var(--eden-yellow))",
-          orange: "hsl(var(--eden-orange))",
-          blue: "hsl(var(--eden-blue))",
-          purple: "hsl(var(--eden-purple))",
-          red: "hsl(var(--eden-red))",
-        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -105,7 +97,7 @@ export default {
         },
         "float": {
           "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-6px)" },
+          "50%": { transform: "translateY(-8px)" },
         },
       },
       animation: {
