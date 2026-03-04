@@ -7,36 +7,24 @@ export interface BibleVerse {
 }
 
 export const moodEmojis: Record<Mood, string> = {
-  happy: "😊",
-  sad: "😢",
-  anxious: "😰",
-  grateful: "🙏",
-  angry: "😤",
-  lonely: "💙",
-  hopeful: "🌅",
-  tired: "😴",
+  happy: "😊", sad: "😢", anxious: "😰", grateful: "🙏",
+  angry: "😤", lonely: "💙", hopeful: "🌅", tired: "😴",
 };
 
 export const moodLabels: Record<Mood, string> = {
-  happy: "Joyful",
-  sad: "Down",
-  anxious: "Worried",
-  grateful: "Thankful",
-  angry: "Frustrated",
-  lonely: "Lonely",
-  hopeful: "Hopeful",
-  tired: "Weary",
+  happy: "Joyful", sad: "Down", anxious: "Worried", grateful: "Thankful",
+  angry: "Frustrated", lonely: "Lonely", hopeful: "Hopeful", tired: "Weary",
 };
 
 export const moodColors: Record<Mood, string> = {
-  happy: "bg-mood-joy/20 border-mood-joy/40",
-  sad: "bg-mood-serene/20 border-mood-serene/40",
-  anxious: "bg-mood-comfort/20 border-mood-comfort/40",
-  grateful: "bg-mood-peace/20 border-mood-peace/40",
-  angry: "bg-accent/20 border-accent/40",
-  lonely: "bg-mood-serene/20 border-mood-serene/40",
-  hopeful: "bg-mood-hope/20 border-mood-hope/40",
-  tired: "bg-muted border-muted-foreground/20",
+  happy: "bg-secondary/10 border-secondary/20",
+  sad: "bg-primary/10 border-primary/20",
+  anxious: "bg-secondary/10 border-secondary/20",
+  grateful: "bg-primary/10 border-primary/20",
+  angry: "bg-destructive/10 border-destructive/20",
+  lonely: "bg-primary/10 border-primary/20",
+  hopeful: "bg-secondary/10 border-secondary/20",
+  tired: "bg-muted/50 border-muted-foreground/20",
 };
 
 export const versesByMood: Record<Mood, BibleVerse[]> = {
@@ -87,7 +75,6 @@ export function getRandomVerse(mood: Mood): BibleVerse {
   return verses[Math.floor(Math.random() * verses.length)];
 }
 
-// Bible trivia for games
 export interface TriviaQuestion {
   question: string;
   options: string[];

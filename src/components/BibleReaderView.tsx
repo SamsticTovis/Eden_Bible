@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 interface BibleReaderViewProps {
@@ -16,10 +16,8 @@ interface ChapterData {
   verses: Record<string, { text: string }>;
   next?: { bookId: string; number: number };
   previous?: { bookId: string; number: number };
-  thisChapterLink?: string;
 }
 
-// Map common book names to API IDs
 const bookNameMap: Record<string, string> = {
   genesis: "GEN", gen: "GEN",
   exodus: "EXO", exo: "EXO",
@@ -35,14 +33,11 @@ const bookNameMap: Record<string, string> = {
   "2 kings": "2KI", "2kings": "2KI", "2ki": "2KI",
   "1 chronicles": "1CH", "1chronicles": "1CH",
   "2 chronicles": "2CH", "2chronicles": "2CH",
-  ezra: "EZR",
-  nehemiah: "NEH",
-  esther: "EST",
-  job: "JOB",
+  ezra: "EZR", nehemiah: "NEH", esther: "EST", job: "JOB",
   psalms: "PSA", psalm: "PSA", psa: "PSA", ps: "PSA",
   proverbs: "PRO", pro: "PRO", prov: "PRO",
   ecclesiastes: "ECC", ecc: "ECC",
-  "song of solomon": "SNG", "songs": "SNG", sng: "SNG",
+  "song of solomon": "SNG", songs: "SNG", sng: "SNG",
   isaiah: "ISA", isa: "ISA",
   jeremiah: "JER", jer: "JER",
   lamentations: "LAM", lam: "LAM",
@@ -99,18 +94,13 @@ const BibleReaderView = ({ book, chapter, translation, onChapterChange, onEdenMe
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadChapter();
-  }, [book, chapter, translation]);
+  useEffect(() => { loadChapter(); }, [book, chapter, translation]);
 
   const loadChapter = async () => {
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     const bookId = resolveBookId(book);
-    const url = `https://bible.helloao.org/api/${translation}/${bookId}/${chapter}.json`;
-
     try {
-      const res = await fetch(url);
+      const res = await fetch(`https://bible.helloao.org/api/${translation}/${bookId}/${chapter}.json`);
       if (!res.ok) throw new Error("Chapter not found");
       const json = await res.json();
       setData(json);
@@ -118,27 +108,21 @@ const BibleReaderView = ({ book, chapter, translation, onChapterChange, onEdenMe
     } catch {
       setError("Couldn't load that chapter. Check the book name and try again!");
       onEdenMessage("Hmm, I couldn't find that chapter. Try 'Genesis 1' or 'Psalm 23' 🤔");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="animate-spin text-primary" size={28} />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center py-12">
+      <Loader2 className="animate-spin text-primary" size={24} />
+    </div>
+  );
 
-  if (error) {
-    return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8">
-        <p className="text-3xl mb-2">🤷</p>
-        <p className="text-muted-foreground font-body text-sm font-medium">{error}</p>
-      </motion.div>
-    );
-  }
+  if (error) return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8">
+      <p className="text-2xl mb-2">🤷</p>
+      <p className="text-muted-foreground font-body text-sm">{error}</p>
+    </motion.div>
+  );
 
   if (!data) return null;
 
@@ -146,46 +130,39 @@ const BibleReaderView = ({ book, chapter, translation, onChapterChange, onEdenMe
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-      {/* Chapter header */}
       <div className="text-center mb-4">
-        <h2 className="font-display font-extrabold text-xl text-foreground">
+        <h2 className="font-display font-bold text-lg text-foreground tracking-tight">
           {data.book?.name || book} {data.chapter?.number || chapter}
         </h2>
-        <span className="text-xs text-muted-foreground font-body font-semibold bg-muted px-2 py-0.5 rounded-full border border-border">
+        <span className="text-[10px] text-muted-foreground font-medium bg-muted/50 px-2 py-0.5 rounded-full">
           {translation.toUpperCase()}
         </span>
       </div>
 
-      {/* Verses */}
-      <div className="bg-card border-2 border-border rounded-2xl p-5 shadow-bold mb-4 max-h-[50vh] overflow-y-auto">
+      <div className="glass rounded-2xl p-5 shadow-soft mb-4 max-h-[50vh] overflow-y-auto">
         {verses.map(([num, verse]) => (
-          <p key={num} className="font-body text-foreground leading-relaxed mb-2">
-            <span className="text-primary font-bold text-xs align-super mr-1">{num}</span>
-            {typeof verse === "object" && verse.text
-              ? verse.text
-              : String(verse)}
+          <p key={num} className="font-body text-foreground/85 leading-[1.8] mb-1.5 text-[14px]">
+            <span className="text-primary/60 font-semibold text-[11px] align-super mr-1">{num}</span>
+            {typeof verse === "object" && verse.text ? verse.text : String(verse)}
           </p>
         ))}
       </div>
 
-      {/* Navigation buttons - gaming style */}
-      <div className="flex gap-3">
+      <div className="flex gap-2.5">
         {data.previous && (
           <button
             onClick={() => onChapterChange(data.previous!.bookId, data.previous!.number)}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-muted border-2 border-border font-display font-bold text-sm text-foreground shadow-bold active:shadow-none active:translate-y-[3px] transition-all"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl glass text-foreground/80 font-medium text-sm hover:bg-muted/50 transition-all"
           >
-            <ChevronLeft size={18} />
-            Prev Level
+            <ChevronLeft size={16} /> Prev
           </button>
         )}
         {data.next && (
           <button
             onClick={() => onChapterChange(data.next!.bookId, data.next!.number)}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-primary border-2 border-primary font-display font-bold text-sm text-primary-foreground shadow-bold active:shadow-none active:translate-y-[3px] transition-all"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/15 text-primary font-medium text-sm hover:bg-primary/25 transition-all"
           >
-            Next Level
-            <ChevronRight size={18} />
+            Next <ChevronRight size={16} />
           </button>
         )}
       </div>

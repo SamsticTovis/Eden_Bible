@@ -23,9 +23,7 @@ const Index = () => {
     setActiveChapter({ book: bookId, chapter });
   }, []);
 
-  const handleEdenMessage = useCallback((msg: string) => {
-    setEdenMessage(msg);
-  }, []);
+  const handleEdenMessage = useCallback((msg: string) => setEdenMessage(msg), []);
 
   const handleGameReact = useCallback((mood: "happy" | "thinking" | "cheering" | "sad", message: string) => {
     setEdenMood(mood);
@@ -40,10 +38,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top: Eden + Settings */}
-      <header className="bg-card border-b-2 border-border sticky top-0 z-40">
+      {/* Header */}
+      <header className="glass-strong sticky top-0 z-40">
         <div className="max-w-lg mx-auto">
-          <div className="flex items-center justify-between px-4 pt-6 pb-0">
+          <div className="flex items-center justify-between px-4 pt-5 pb-0">
             <div className="flex-1" />
             <TranslationPicker value={translation} onChange={setTranslation} />
           </div>
@@ -56,18 +54,16 @@ const Index = () => {
       </header>
 
       {/* Main content */}
-      <main className="max-w-lg mx-auto px-4 py-4 pb-8">
-        {/* Smart Search */}
+      <main className="max-w-lg mx-auto px-4 py-4 pb-28">
         <SmartSearch onLoadChapter={handleLoadChapter} translation={translation} />
 
-        {/* Reader or VOTD */}
         <div className="mt-4">
           {activeChapter ? (
             <motion.div key={`${activeChapter.book}-${activeChapter.chapter}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="flex items-center justify-between mb-3">
                 <button
                   onClick={() => setActiveChapter(null)}
-                  className="text-primary font-body font-bold text-sm hover:underline"
+                  className="text-primary font-body font-medium text-sm hover:underline"
                 >
                   ← Back to Home
                 </button>
@@ -85,16 +81,10 @@ const Index = () => {
           )}
         </div>
 
-        {/* Games */}
         <GamesDrawer onEdenReact={handleGameReact} />
       </main>
 
-      {/* Mood Scan Overlay */}
-      <MoodScanOverlay
-        open={moodScanOpen}
-        onClose={() => setMoodScanOpen(false)}
-        onEdenReact={handleMoodReact}
-      />
+      <MoodScanOverlay open={moodScanOpen} onClose={() => setMoodScanOpen(false)} onEdenReact={handleMoodReact} />
     </div>
   );
 };
