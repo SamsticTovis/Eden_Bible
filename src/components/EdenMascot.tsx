@@ -7,7 +7,7 @@ const speechMap: Record<AppTab, string> = {
   comfort: "How are you feeling today? 🤍",
   games: "Ready to play? Let's go! 🎮",
   journey: "Keep that streak alive! 🔥",
-  settings: "Customize your experience ⚙️",
+  
 };
 
 interface EdenMascotProps {

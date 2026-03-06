@@ -18,63 +18,81 @@ interface ChapterVerse {
   text: string;
 }
 
-const DEFAULT_TRANSLATION = "BSB";
+const API_BASE = "https://bible.helloao.org/api";
+
+const OT_BOOKS = new Set([
+  "GEN","EXO","LEV","NUM","DEU","JOS","JDG","RUT","1SA","2SA","1KI","2KI",
+  "1CH","2CH","EZR","NEH","EST","JOB","PSA","PRO","ECC","SNG","ISA","JER",
+  "LAM","EZK","DAN","HOS","JOL","AMO","OBA","JON","MIC","NAM","HAB","ZEP",
+  "HAG","ZEC","MAL"
+]);
 
 const FullBibleReader = () => {
-  const [translation, setTranslation] = useState(DEFAULT_TRANSLATION);
+  const [translation, setTranslation] = useState(() => localStorage.getItem("eden-version") || "BSB");
   const [books, setBooks] = useState<BookInfo[]>([]);
   const [selectedBook, setSelectedBook] = useState<BookInfo | null>(null);
   const [chapter, setChapter] = useState(1);
   const [verses, setVerses] = useState<ChapterVerse[]>([]);
   const [loading, setLoading] = useState(false);
+  const [booksLoading, setBooksLoading] = useState(true);
   const [showBooks, setShowBooks] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [bookmarkedVerses, setBookmarkedVerses] = useState<Set<string>>(() => {
-    try {
-      return new Set(JSON.parse(localStorage.getItem("eden-bookmarks") || "[]"));
-    } catch { return new Set(); }
+    try { return new Set(JSON.parse(localStorage.getItem("eden-bookmarks") || "[]")); }
+    catch { return new Set(); }
   });
   const [activeTab, setActiveTab] = useState<"old" | "new">("old");
 
   // Fetch books
   useEffect(() => {
-    fetch(`https://bible.helloao.org/api/${translation}/books.json`)
-      .then((r) => r.json())
+    setBooksLoading(true);
+    fetch(`${API_BASE}/${translation}/books.json`)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((data) => {
-        const bookList: BookInfo[] = (data || []).map((b: any) => ({
+        // API returns array of book objects
+        const rawBooks = Array.isArray(data) ? data : data?.books || [];
+        const bookList: BookInfo[] = rawBooks.map((b: any) => ({
           id: b.id,
           name: b.name,
           commonName: b.commonName || b.name,
           numberOfChapters: b.numberOfChapters,
-          testament: b.testament || (["GEN","EXO","LEV","NUM","DEU","JOS","JDG","RUT","1SA","2SA","1KI","2KI","1CH","2CH","EZR","NEH","EST","JOB","PSA","PRO","ECC","SNG","ISA","JER","LAM","EZK","DAN","HOS","JOL","AMO","OBA","JON","MIC","NAM","HAB","ZEP","HAG","ZEC","MAL"].includes(b.id) ? "OT" : "NT"),
+          testament: b.testament || (OT_BOOKS.has(b.id) ? "OT" : "NT"),
         }));
         setBooks(bookList);
       })
-      .catch(() => {
-        toast({ title: "Failed to load books", variant: "destructive" });
-      });
+      .catch((err) => {
+        console.error("Failed to load books:", err);
+        toast({ title: "Failed to load books", description: "Check your connection and try again.", variant: "destructive" });
+      })
+      .finally(() => setBooksLoading(false));
   }, [translation]);
 
   // Fetch chapter
   const fetchChapter = useCallback(async (bookId: string, chap: number) => {
     setLoading(true);
     try {
-      const res = await fetch(`https://bible.helloao.org/api/${translation}/${bookId}/${chap}.json`);
+      const res = await fetch(`${API_BASE}/${translation}/${bookId}/${chap}.json`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const chapterData = data?.chapter;
       if (chapterData) {
-        const parsed: ChapterVerse[] = Object.entries(chapterData.content || {})
+        const content = chapterData.content || {};
+        const parsed: ChapterVerse[] = Object.entries(content)
           .filter(([key]) => !isNaN(Number(key)))
           .sort(([a], [b]) => Number(a) - Number(b))
-          .map(([num, content]: [string, any]) => ({
+          .map(([num, val]: [string, any]) => ({
             number: num,
-            text: typeof content === "string" ? content : (content?.text || content?.heading || JSON.stringify(content)),
+            text: typeof val === "string" ? val : (val?.text || val?.heading || JSON.stringify(val)),
           }));
         setVerses(parsed);
       } else {
         setVerses([]);
       }
-    } catch {
+    } catch (err) {
+      console.error("Failed to load chapter:", err);
       toast({ title: "Failed to load chapter", variant: "destructive" });
       setVerses([]);
     } finally {
@@ -109,7 +127,7 @@ const FullBibleReader = () => {
   const copyVerse = (verse: ChapterVerse) => {
     const text = `"${verse.text}" — ${selectedBook?.commonName} ${chapter}:${verse.number} (${translation})`;
     navigator.clipboard.writeText(text);
-    toast({ title: "Copied! 📋", description: `${selectedBook?.commonName} ${chapter}:${verse.number}` });
+    toast({ title: "Copied! 📋" });
   };
 
   const shareVerse = async (verse: ChapterVerse) => {
@@ -118,7 +136,7 @@ const FullBibleReader = () => {
       await navigator.share({ text });
     } else {
       await navigator.clipboard.writeText(text);
-      toast({ title: "Copied to clipboard!", description: text.slice(0, 60) + "..." });
+      toast({ title: "Copied to clipboard!" });
     }
   };
 
@@ -137,6 +155,21 @@ const FullBibleReader = () => {
             <h2 className="font-display text-2xl text-center mb-1 text-foreground">Bible Reader</h2>
             <p className="text-center text-muted-foreground font-body mb-4 text-sm">Read God's Word 📖</p>
 
+            {/* Translation selector */}
+            <div className="flex items-center justify-center gap-2 mb-3">
+              {["BSB", "KJV", "WEB", "ASV"].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setTranslation(v)}
+                  className={`px-3 py-1 rounded-lg font-body text-xs font-medium transition-all ${
+                    translation === v ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground"
+                  }`}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+
             {/* Search */}
             <div className="relative mb-3">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -144,7 +177,7 @@ const FullBibleReader = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search books..."
-                className="pl-9 pr-9 bg-card border-border font-body text-sm"
+                className="pl-9 pr-9 bg-card border-border font-body text-sm rounded-xl"
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -159,9 +192,9 @@ const FullBibleReader = () => {
                 <button
                   key={t}
                   onClick={() => setActiveTab(t)}
-                  className={`flex-1 py-2 rounded-xl font-body text-sm font-medium transition-all ${
+                  className={`flex-1 py-2.5 rounded-xl font-body text-sm font-medium transition-all ${
                     activeTab === t
-                      ? "bg-primary text-primary-foreground"
+                      ? "bg-primary text-primary-foreground shadow-warm"
                       : "bg-card border border-border text-muted-foreground"
                   }`}
                 >
@@ -171,21 +204,30 @@ const FullBibleReader = () => {
             </div>
 
             {/* Book grid */}
-            <div className="grid grid-cols-2 gap-2 max-h-[55vh] overflow-y-auto pr-1">
-              {filteredBooks.map((book, i) => (
-                <motion.button
-                  key={book.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(i * 0.02, 0.5) }}
-                  onClick={() => selectBook(book)}
-                  className="p-3 rounded-xl bg-card border border-border text-left hover:border-primary/40 hover:shadow-soft transition-all active:scale-[0.98]"
-                >
-                  <p className="font-body text-sm font-medium text-foreground truncate">{book.commonName}</p>
-                  <p className="font-body text-[10px] text-muted-foreground">{book.numberOfChapters} chapters</p>
-                </motion.button>
-              ))}
-            </div>
+            {booksLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 max-h-[55vh] overflow-y-auto pr-1">
+                {filteredBooks.length === 0 && (
+                  <p className="col-span-2 text-center text-muted-foreground font-body text-sm py-8">No books found</p>
+                )}
+                {filteredBooks.map((book, i) => (
+                  <motion.button
+                    key={book.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.02, 0.5) }}
+                    onClick={() => selectBook(book)}
+                    className="p-3 rounded-xl bg-card border border-border text-left hover:border-primary/40 hover:shadow-soft transition-all active:scale-[0.98]"
+                  >
+                    <p className="font-body text-sm font-medium text-foreground truncate">{book.commonName}</p>
+                    <p className="font-body text-[10px] text-muted-foreground">{book.numberOfChapters} chapters</p>
+                  </motion.button>
+                ))}
+              </div>
+            )}
           </motion.div>
         ) : (
           <motion.div key="reader" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
@@ -201,7 +243,9 @@ const FullBibleReader = () => {
               <select
                 value={translation}
                 onChange={(e) => {
-                  setTranslation(e.target.value);
+                  const newT = e.target.value;
+                  setTranslation(newT);
+                  localStorage.setItem("eden-version", newT);
                   if (selectedBook) fetchChapter(selectedBook.id, chapter);
                 }}
                 className="bg-card border border-border rounded-lg px-2 py-1 font-body text-xs text-foreground"
@@ -214,25 +258,11 @@ const FullBibleReader = () => {
 
             {/* Chapter nav */}
             <div className="flex items-center justify-between mb-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => changeChapter(-1)}
-                disabled={chapter <= 1}
-                className="gap-1 font-body text-xs"
-              >
+              <Button variant="outline" size="sm" onClick={() => changeChapter(-1)} disabled={chapter <= 1} className="gap-1 font-body text-xs rounded-xl">
                 <ChevronLeft size={14} /> Prev
               </Button>
-              <span className="font-body text-sm text-muted-foreground">
-                {chapter} / {selectedBook?.numberOfChapters}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => changeChapter(1)}
-                disabled={chapter >= (selectedBook?.numberOfChapters || 1)}
-                className="gap-1 font-body text-xs"
-              >
+              <span className="font-body text-sm text-muted-foreground">{chapter} / {selectedBook?.numberOfChapters}</span>
+              <Button variant="outline" size="sm" onClick={() => changeChapter(1)} disabled={chapter >= (selectedBook?.numberOfChapters || 1)} className="gap-1 font-body text-xs rounded-xl">
                 Next <ChevronRight size={14} />
               </Button>
             </div>
