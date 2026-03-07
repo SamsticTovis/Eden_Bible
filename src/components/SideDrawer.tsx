@@ -6,7 +6,7 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import { User, Settings, BookOpen, Shield, HelpCircle, Info } from "lucide-react";
+import { User, Settings, BookOpen, Shield, HelpCircle, Info, Users, LogOut } from "lucide-react";
 
 interface SideDrawerProps {
   open: boolean;
@@ -16,11 +16,13 @@ interface SideDrawerProps {
 
 const menuItems = [
   { label: "Profile", icon: User, action: "profile" },
+  { label: "Friends", icon: Users, action: "friends" },
+  { label: "Prayer Circles", icon: Shield, action: "prayer-circles" },
   { label: "Settings", icon: Settings, action: "settings" },
-  { label: "Bible Version", icon: BookOpen, action: "settings" },
-  { label: "Account", icon: Shield, action: "account" },
+  { label: "Bible Versions", icon: BookOpen, action: "settings" },
   { label: "Help", icon: HelpCircle, action: "help" },
   { label: "About", icon: Info, action: "about" },
+  { label: "Logout", icon: LogOut, action: "logout" },
 ];
 
 const SideDrawer = ({ open, onClose, onOpenSettings }: SideDrawerProps) => {
