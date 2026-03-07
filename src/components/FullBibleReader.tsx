@@ -14,8 +14,14 @@ interface BookInfo {
 }
 
 interface ChapterVerse {
-  number: string;
+  number: number;
   text: string;
+}
+
+interface ContentItem {
+  type: string;
+  number?: number;
+  content?: (string | { text?: string; noteId?: number; lineBreak?: boolean; poem?: number })[];
 }
 
 const API_BASE = "https://bible.helloao.org/api";
@@ -27,12 +33,30 @@ const OT_BOOKS = new Set([
   "HAG","ZEC","MAL"
 ]);
 
+/** Extract plain text from a verse content array */
+function extractVerseText(content: ContentItem["content"]): string {
+  if (!content) return "";
+  return content
+    .map((item) => {
+      if (typeof item === "string") return item;
+      if (item && typeof item === "object") {
+        if (item.text) return item.text;
+        if (item.lineBreak) return " ";
+      }
+      return "";
+    })
+    .join("")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const FullBibleReader = () => {
   const [translation, setTranslation] = useState(() => localStorage.getItem("eden-version") || "BSB");
   const [books, setBooks] = useState<BookInfo[]>([]);
   const [selectedBook, setSelectedBook] = useState<BookInfo | null>(null);
   const [chapter, setChapter] = useState(1);
   const [verses, setVerses] = useState<ChapterVerse[]>([]);
+  const [headings, setHeadings] = useState<Map<number, string>>(new Map());
   const [loading, setLoading] = useState(false);
   const [booksLoading, setBooksLoading] = useState(true);
   const [showBooks, setShowBooks] = useState(true);
@@ -52,7 +76,7 @@ const FullBibleReader = () => {
         return r.json();
       })
       .then((data) => {
-        // API returns array of book objects
+        // API returns an array directly
         const rawBooks = Array.isArray(data) ? data : data?.books || [];
         const bookList: BookInfo[] = rawBooks.map((b: any) => ({
           id: b.id,
@@ -70,31 +94,42 @@ const FullBibleReader = () => {
       .finally(() => setBooksLoading(false));
   }, [translation]);
 
-  // Fetch chapter
+  // Fetch chapter — parse the content array correctly
   const fetchChapter = useCallback(async (bookId: string, chap: number) => {
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/${translation}/${bookId}/${chap}.json`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const chapterData = data?.chapter;
-      if (chapterData) {
-        const content = chapterData.content || {};
-        const parsed: ChapterVerse[] = Object.entries(content)
-          .filter(([key]) => !isNaN(Number(key)))
-          .sort(([a], [b]) => Number(a) - Number(b))
-          .map(([num, val]: [string, any]) => ({
-            number: num,
-            text: typeof val === "string" ? val : (val?.text || val?.heading || JSON.stringify(val)),
-          }));
-        setVerses(parsed);
-      } else {
-        setVerses([]);
+
+      const contentArray: ContentItem[] = data?.chapter?.content || [];
+      const parsedVerses: ChapterVerse[] = [];
+      const parsedHeadings = new Map<number, string>();
+      let lastHeading = "";
+
+      for (const item of contentArray) {
+        if (item.type === "heading" && item.content) {
+          lastHeading = item.content.map((c: any) => (typeof c === "string" ? c : c?.text || "")).join("");
+        }
+        if (item.type === "verse" && item.number != null) {
+          if (lastHeading) {
+            parsedHeadings.set(item.number, lastHeading);
+            lastHeading = "";
+          }
+          parsedVerses.push({
+            number: item.number,
+            text: extractVerseText(item.content),
+          });
+        }
       }
+
+      setVerses(parsedVerses);
+      setHeadings(parsedHeadings);
     } catch (err) {
       console.error("Failed to load chapter:", err);
       toast({ title: "Failed to load chapter", variant: "destructive" });
       setVerses([]);
+      setHeadings(new Map());
     } finally {
       setLoading(false);
     }
@@ -113,6 +148,14 @@ const FullBibleReader = () => {
     if (next < 1 || next > selectedBook.numberOfChapters) return;
     setChapter(next);
     fetchChapter(selectedBook.id, next);
+  };
+
+  const handleTranslationChange = (newT: string) => {
+    setTranslation(newT);
+    localStorage.setItem("eden-version", newT);
+    if (selectedBook) {
+      fetchChapter(selectedBook.id, chapter);
+    }
   };
 
   const toggleBookmark = (verseKey: string) => {
@@ -160,9 +203,9 @@ const FullBibleReader = () => {
               {["BSB", "KJV", "WEB", "ASV"].map((v) => (
                 <button
                   key={v}
-                  onClick={() => setTranslation(v)}
-                  className={`px-3 py-1 rounded-lg font-body text-xs font-medium transition-all ${
-                    translation === v ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground"
+                  onClick={() => handleTranslationChange(v)}
+                  className={`px-3 py-1.5 rounded-xl font-body text-xs font-medium transition-all ${
+                    translation === v ? "bg-primary text-primary-foreground shadow-warm" : "bg-card border border-border text-muted-foreground hover:border-primary/30"
                   }`}
                 >
                   {v}
@@ -195,7 +238,7 @@ const FullBibleReader = () => {
                   className={`flex-1 py-2.5 rounded-xl font-body text-sm font-medium transition-all ${
                     activeTab === t
                       ? "bg-primary text-primary-foreground shadow-warm"
-                      : "bg-card border border-border text-muted-foreground"
+                      : "bg-card border border-border text-muted-foreground hover:border-primary/30"
                   }`}
                 >
                   {t === "old" ? "Old Testament" : "New Testament"}
@@ -242,12 +285,7 @@ const FullBibleReader = () => {
               </div>
               <select
                 value={translation}
-                onChange={(e) => {
-                  const newT = e.target.value;
-                  setTranslation(newT);
-                  localStorage.setItem("eden-version", newT);
-                  if (selectedBook) fetchChapter(selectedBook.id, chapter);
-                }}
+                onChange={(e) => handleTranslationChange(e.target.value)}
                 className="bg-card border border-border rounded-lg px-2 py-1 font-body text-xs text-foreground"
               >
                 {["BSB", "KJV", "WEB", "ASV"].map((v) => (
@@ -261,7 +299,7 @@ const FullBibleReader = () => {
               <Button variant="outline" size="sm" onClick={() => changeChapter(-1)} disabled={chapter <= 1} className="gap-1 font-body text-xs rounded-xl">
                 <ChevronLeft size={14} /> Prev
               </Button>
-              <span className="font-body text-sm text-muted-foreground">{chapter} / {selectedBook?.numberOfChapters}</span>
+              <span className="font-body text-sm text-muted-foreground">Chapter {chapter} of {selectedBook?.numberOfChapters}</span>
               <Button variant="outline" size="sm" onClick={() => changeChapter(1)} disabled={chapter >= (selectedBook?.numberOfChapters || 1)} className="gap-1 font-body text-xs rounded-xl">
                 Next <ChevronRight size={14} />
               </Button>
@@ -272,36 +310,47 @@ const FullBibleReader = () => {
               <div className="flex justify-center py-12">
                 <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
               </div>
+            ) : verses.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground font-body text-sm">No verses found for this chapter.</p>
+              </div>
             ) : (
-              <div className="flex flex-col gap-1 max-h-[60vh] overflow-y-auto pr-1">
+              <div className="flex flex-col gap-0.5 max-h-[60vh] overflow-y-auto pr-1">
                 {verses.map((verse) => {
                   const key = `${selectedBook?.id}-${chapter}-${verse.number}`;
                   const isBookmarked = bookmarkedVerses.has(key);
+                  const heading = headings.get(verse.number);
                   return (
-                    <motion.div
-                      key={verse.number}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="group flex gap-2 py-2 px-1 rounded-lg hover:bg-card/80 transition-colors"
-                    >
-                      <span className="font-body text-xs text-primary font-bold mt-0.5 w-6 flex-shrink-0 text-right">
-                        {verse.number}
-                      </span>
-                      <div className="flex-1">
-                        <p className="font-body text-foreground leading-relaxed text-[15px]">{verse.text}</p>
-                        <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => toggleBookmark(key)} className="p-1 rounded">
-                            <Bookmark size={12} className={isBookmarked ? "text-primary fill-primary" : "text-muted-foreground"} />
-                          </button>
-                          <button onClick={() => copyVerse(verse)} className="p-1 rounded">
-                            <Copy size={12} className="text-muted-foreground" />
-                          </button>
-                          <button onClick={() => shareVerse(verse)} className="p-1 rounded">
-                            <Share2 size={12} className="text-muted-foreground" />
-                          </button>
+                    <div key={verse.number}>
+                      {heading && (
+                        <h3 className="font-display text-sm text-primary font-semibold mt-5 mb-2 px-1">
+                          {heading}
+                        </h3>
+                      )}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="group flex gap-2 py-2 px-1 rounded-lg hover:bg-card/80 transition-colors"
+                      >
+                        <span className="font-body text-xs text-primary font-bold mt-0.5 w-6 flex-shrink-0 text-right">
+                          {verse.number}
+                        </span>
+                        <div className="flex-1">
+                          <p className="font-body text-foreground leading-relaxed text-[15px]">{verse.text}</p>
+                          <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={() => toggleBookmark(key)} className="p-1 rounded">
+                              <Bookmark size={12} className={isBookmarked ? "text-primary fill-primary" : "text-muted-foreground"} />
+                            </button>
+                            <button onClick={() => copyVerse(verse)} className="p-1 rounded">
+                              <Copy size={12} className="text-muted-foreground" />
+                            </button>
+                            <button onClick={() => shareVerse(verse)} className="p-1 rounded">
+                              <Share2 size={12} className="text-muted-foreground" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
+                      </motion.div>
+                    </div>
                   );
                 })}
               </div>
