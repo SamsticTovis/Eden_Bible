@@ -10,22 +10,54 @@ import SettingsPage from "@/components/SettingsPage";
 import FloatingAssistant from "@/components/FloatingAssistant";
 import AIComfortChat from "@/components/AIComfortChat";
 import SideDrawer from "@/components/SideDrawer";
+import AuthPage from "@/components/AuthPage";
+import PrayerCircles from "@/components/PrayerCircles";
+import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Index = () => {
+  const { user, loading, signOut } = useAuth();
   const [tab, setTab] = useState<AppTab>("home");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showPrayerCircles, setShowPrayerCircles] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="font-body text-muted-foreground animate-pulse">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthPage />;
+  }
 
   const handleOpenSettings = () => {
     setShowSettings(true);
+    setShowPrayerCircles(false);
     setDrawerOpen(false);
+  };
+
+  const handleDrawerAction = (action: string) => {
+    if (action === "settings") handleOpenSettings();
+    else if (action === "prayer-circles") {
+      setShowPrayerCircles(true);
+      setShowSettings(false);
+      setShowAIChat(false);
+      setDrawerOpen(false);
+    } else if (action === "logout") {
+      signOut();
+      setDrawerOpen(false);
+    } else {
+      setDrawerOpen(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
       <header className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="flex items-center justify-between px-5 pt-8 pb-3 max-w-lg mx-auto">
           <motion.h1
@@ -44,22 +76,24 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Side Drawer */}
       <SideDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         onOpenSettings={handleOpenSettings}
+        onAction={handleDrawerAction}
       />
 
-      {/* Floating assistant */}
       <FloatingAssistant onTap={() => setShowAIChat(true)} />
 
-      {/* Content */}
       <main className="px-5 py-6">
         <AnimatePresence mode="wait">
           {showAIChat ? (
             <motion.div key="ai-chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <AIComfortChat onClose={() => setShowAIChat(false)} />
+            </motion.div>
+          ) : showPrayerCircles ? (
+            <motion.div key="prayer-circles" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <PrayerCircles onBack={() => setShowPrayerCircles(false)} />
             </motion.div>
           ) : showSettings ? (
             <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -89,7 +123,7 @@ const Index = () => {
         </AnimatePresence>
       </main>
 
-      <BottomNav active={tab} onChange={(t) => { setShowAIChat(false); setShowSettings(false); setTab(t); }} />
+      <BottomNav active={tab} onChange={(t) => { setShowAIChat(false); setShowSettings(false); setShowPrayerCircles(false); setTab(t); }} />
     </div>
   );
 };

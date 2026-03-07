@@ -12,6 +12,7 @@ interface SideDrawerProps {
   open: boolean;
   onClose: () => void;
   onOpenSettings: () => void;
+  onAction?: (action: string) => void;
 }
 
 const menuItems = [
@@ -25,12 +26,16 @@ const menuItems = [
   { label: "Logout", icon: LogOut, action: "logout" },
 ];
 
-const SideDrawer = ({ open, onClose, onOpenSettings }: SideDrawerProps) => {
+const SideDrawer = ({ open, onClose, onOpenSettings, onAction }: SideDrawerProps) => {
   const handleClick = (action: string) => {
-    if (action === "settings") {
+    if (onAction) {
+      onAction(action);
+    } else if (action === "settings") {
       onOpenSettings();
+      onClose();
+    } else {
+      onClose();
     }
-    onClose();
   };
 
   return (
