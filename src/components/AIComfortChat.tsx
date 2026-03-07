@@ -4,6 +4,8 @@ import { Send, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import ReactMarkdown from "react-markdown";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -18,16 +20,45 @@ const quickPrompts = [
 ];
 
 const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "Peace be with you 🕊️ I'm Eden, your spiritual companion. How are you feeling today? I'm here to listen, encourage, and share God's Word with you." },
+    { role: "assistant", content: "Peace be with you 🕊️ I'm Eden, your spiritual companion. How are you feeling today?" },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Load chat history from database
+  useEffect(() => {
+    if (!user) { setHistoryLoaded(true); return; }
+    const load = async () => {
+      const { data } = await supabase
+        .from("chat_messages")
+        .select("role, content")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(50);
+      if (data && data.length > 0) {
+        setMessages(data as Msg[]);
+      }
+      setHistoryLoaded(true);
+    };
+    load();
+  }, [user]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  const saveMessage = async (msg: Msg) => {
+    if (!user) return;
+    await supabase.from("chat_messages").insert({
+      user_id: user.id,
+      role: msg.role,
+      content: msg.content,
+    });
+  };
 
   const send = async (text: string) => {
     if (!text.trim() || isLoading) return;
@@ -36,6 +67,8 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
     setMessages(allMessages);
     setInput("");
     setIsLoading(true);
+
+    await saveMessage(userMsg);
 
     let assistantSoFar = "";
 
@@ -91,6 +124,11 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
           } catch { /* partial JSON */ }
         }
       }
+
+      // Save final assistant message
+      if (assistantSoFar) {
+        await saveMessage({ role: "assistant", content: assistantSoFar });
+      }
     } catch (e) {
       console.error(e);
       toast({ title: "Connection error", variant: "destructive" });
@@ -99,6 +137,14 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
     }
   };
 
+  if (!historyLoaded) {
+    return (
+      <div className="max-w-md mx-auto flex items-center justify-center h-40">
+        <p className="font-body text-sm text-muted-foreground animate-pulse">Loading your conversations...</p>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -106,7 +152,6 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
       exit={{ opacity: 0, y: 20 }}
       className="max-w-md mx-auto flex flex-col h-[calc(100vh-10rem)]"
     >
-      {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="font-display text-xl text-foreground">Eden AI Comfort</h2>
@@ -117,7 +162,6 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
         </Button>
       </div>
 
-      {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 mb-3 pr-1">
         {messages.map((msg, i) => (
           <motion.div
@@ -156,7 +200,6 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
         )}
       </div>
 
-      {/* Quick prompts */}
       {messages.length <= 1 && (
         <div className="flex flex-wrap gap-2 mb-3">
           {quickPrompts.map((p) => (
@@ -171,7 +214,6 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
         </div>
       )}
 
-      {/* Input */}
       <div className="flex gap-2">
         <Input
           value={input}
