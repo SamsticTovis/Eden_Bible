@@ -23,6 +23,7 @@ const Index = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showPrayerCircles, setShowPrayerCircles] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   if (loading) {
     return (
