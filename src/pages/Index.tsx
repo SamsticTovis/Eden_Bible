@@ -47,6 +47,7 @@ const Index = () => {
   const handleDrawerAction = (action: string) => {
     if (action === "settings") handleOpenSettings();
     else if (action === "prayer-circles") {
+      if (!requireAuth("join prayer circles")) return;
       setShowPrayerCircles(true);
       setShowSettings(false);
       setShowAIChat(false);
