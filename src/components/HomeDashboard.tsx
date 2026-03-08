@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Heart, Gamepad2, Sparkles, ChevronRight, Flame, Users, MessageCircle, Clock } from "lucide-react";
+import { BookOpen, Heart, Gamepad2, Sparkles, ChevronRight, Flame, Users, MessageCircle, Clock, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStreak } from "@/hooks/useStreak";
+import { useAchievements, ACHIEVEMENTS } from "@/hooks/useAchievements";
 import { getManna } from "./MannaTracker";
 import type { AppTab } from "./BottomNav";
 
@@ -62,6 +63,7 @@ const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles }: HomeDa
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [stats, setStats] = useState({ gamesPlayed: 0, circlesJoined: 0 });
   const manna = getManna();
+  const { unlocked, checkAchievements } = useAchievements();
 
   // Fetch daily devotional from Bible API
   useEffect(() => {
@@ -110,21 +112,29 @@ const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles }: HomeDa
     loadActivity();
   }, [user]);
 
-  // Fetch stats
+  // Fetch stats and check achievements
   useEffect(() => {
     if (!user) return;
     const loadStats = async () => {
       const [profileRes, circlesRes] = await Promise.all([
-        supabase.from("profiles").select("games_won").eq("id", user.id).single(),
+        supabase.from("profiles").select("games_won, chapters_read").eq("id", user.id).single(),
         supabase.from("circle_members").select("id", { count: "exact", head: true }).eq("user_id", user.id),
       ]);
-      setStats({
-        gamesPlayed: profileRes.data?.games_won || 0,
-        circlesJoined: circlesRes.count || 0,
+      const gamesPlayed = profileRes.data?.games_won || 0;
+      const circlesJoined = circlesRes.count || 0;
+      const chaptersRead = profileRes.data?.chapters_read || 0;
+      setStats({ gamesPlayed, circlesJoined });
+
+      // Check achievements based on current stats
+      checkAchievements({
+        chaptersRead,
+        streak,
+        circlesJoined,
+        gamesWon: gamesPlayed,
       });
     };
     loadStats();
-  }, [user]);
+  }, [user, streak, checkAchievements]);
 
   const quickActions = [
     { label: "Read Bible", desc: "Explore God's Word", icon: BookOpen, action: () => onNavigate("read") },
@@ -251,7 +261,54 @@ const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles }: HomeDa
         </div>
       </motion.div>
 
-      {/* SECTION 4 — Recent Activity */}
+      {/* SECTION — Achievements */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <Trophy size={16} className="text-primary" />
+          <h3 className="font-display text-base text-foreground">Achievements</h3>
+        </div>
+        {unlocked.size === 0 ? (
+          <div className="bg-card border border-border rounded-2xl p-5 text-center shadow-soft">
+            <p className="font-body text-sm text-muted-foreground">
+              Complete activities to unlock achievements! 🏆
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {ACHIEVEMENTS.filter((a) => unlocked.has(a.key)).map((a, i) => (
+              <motion.div
+                key={a.key}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.35 + i * 0.05, type: "spring", stiffness: 300 }}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-card border border-primary/20 shadow-soft"
+              >
+                <span className="text-2xl">{a.emoji}</span>
+                <span className="font-body text-[10px] text-foreground font-medium text-center leading-tight">{a.name}</span>
+              </motion.div>
+            ))}
+          </div>
+        )}
+        {/* Locked preview */}
+        {unlocked.size > 0 && unlocked.size < ACHIEVEMENTS.length && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {ACHIEVEMENTS.filter((a) => !unlocked.has(a.key)).map((a) => (
+              <span
+                key={a.key}
+                className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground font-body text-[10px]"
+                title={a.description}
+              >
+                🔒 {a.name}
+              </span>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

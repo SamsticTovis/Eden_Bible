@@ -292,6 +292,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_name: string
+          date_unlocked: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_name: string
+          date_unlocked?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_name?: string
+          date_unlocked?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           created_at: string

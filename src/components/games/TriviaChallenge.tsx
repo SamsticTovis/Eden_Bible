@@ -5,6 +5,8 @@ import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles } from "lucide
 import { Button } from "@/components/ui/button";
 import { useStreak } from "@/hooks/useStreak";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
+import { useAchievements } from "@/hooks/useAchievements";
+
 interface Question {
   id: string;
   question: string;
@@ -24,6 +26,7 @@ const encouragements = {
 const TriviaChallenge = () => {
   const { recordActivity } = useStreak();
   const { logActivity } = useActivityLogger();
+  const { tryUnlock } = useAchievements();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -75,6 +78,7 @@ const TriviaChallenge = () => {
       setFinished(true);
       recordActivity();
       logActivity("game", "Completed Bible Trivia", "Gamepad2");
+      tryUnlock("first_game_won");
     } else {
       setCurrentIndex((i) => i + 1);
       setSelected(null);

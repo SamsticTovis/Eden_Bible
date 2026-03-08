@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
+import { useAchievements } from "@/hooks/useAchievements";
 
 interface BookInfo {
   id: string;
@@ -65,6 +66,7 @@ function extractVerseText(content: ContentItem["content"]): string {
 const FullBibleReader = () => {
   const { recordActivity } = useStreak();
   const { logActivity } = useActivityLogger();
+  const { tryUnlock } = useAchievements();
   const [translation, setTranslation] = useState(() => localStorage.getItem("eden-version") || "BSB");
   const [books, setBooks] = useState<BookInfo[]>([]);
   const [selectedBook, setSelectedBook] = useState<BookInfo | null>(null);
@@ -157,6 +159,7 @@ const FullBibleReader = () => {
     fetchChapter(selectedBook!.id, chap);
     recordActivity();
     await logActivity("read", `Read ${selectedBook!.commonName} ${chap}`, "BookOpen");
+    tryUnlock("first_chapter");
   };
 
   const changeChapter = (dir: number) => {

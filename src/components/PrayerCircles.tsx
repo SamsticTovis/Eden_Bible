@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
+import { useAchievements } from "@/hooks/useAchievements";
 
 interface Circle {
   id: string;
@@ -34,6 +35,7 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
   const { user } = useAuth();
   const { recordActivity } = useStreak();
   const { logActivity } = useActivityLogger();
+  const { tryUnlock } = useAchievements();
   const [circles, setCircles] = useState<Circle[]>([]);
   const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
   const [requests, setRequests] = useState<PrayerRequest[]>([]);
@@ -99,6 +101,7 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
     setJoinCode("");
     loadCircles();
     toast({ title: "Joined circle! 🎉" });
+    tryUnlock("first_circle");
   };
 
   const copyInviteCode = (code: string) => {
