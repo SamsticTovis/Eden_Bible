@@ -34,7 +34,7 @@ const Index = () => {
     );
   }
 
-  if (!user) {
+  if (!user && !isGuest) {
     return <AuthPage />;
   }
 
