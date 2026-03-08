@@ -233,6 +233,9 @@ const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles }: HomeDa
         </motion.div>
       )}
 
+      {/* SECTION — Spiritual Goals & Progress */}
+      <SpiritualGoals />
+
       {/* SECTION 3 — Quick Actions */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
