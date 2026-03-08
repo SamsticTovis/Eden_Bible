@@ -101,6 +101,7 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
     setJoinCode("");
     loadCircles();
     toast({ title: "Joined circle! 🎉" });
+    tryUnlock("first_circle");
   };
 
   const copyInviteCode = (code: string) => {
