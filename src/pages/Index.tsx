@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Menu } from "lucide-react";
 import BottomNav, { AppTab } from "@/components/BottomNav";
@@ -17,6 +17,20 @@ import PrayerCircles from "@/components/PrayerCircles";
 import ProfilePage from "@/components/ProfilePage";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
+
+const slideIn = {
+  initial: { opacity: 0, x: 40 },
+  animate: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -40 },
+  transition: { duration: 0.25, ease: [0.25, 0.1, 0.25, 1] },
+};
+
+const tabSwitch = {
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.22, ease: [0.25, 0.1, 0.25, 1] },
+};
 
 const Index = () => {
   const { user, loading, signOut, isGuest, requireAuth } = useAuth();
@@ -129,19 +143,19 @@ const Index = () => {
       <main className="px-5 py-6">
         <AnimatePresence mode="wait">
           {showAIChat ? (
-            <motion.div key="ai-chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div key="ai-chat" {...slideIn}>
               <AIComfortChat onClose={() => setShowAIChat(false)} />
             </motion.div>
           ) : showProfile ? (
-            <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div key="profile" {...slideIn}>
               <ProfilePage onBack={() => setShowProfile(false)} />
             </motion.div>
           ) : showPrayerCircles ? (
-            <motion.div key="prayer-circles" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div key="prayer-circles" {...slideIn}>
               <PrayerCircles onBack={() => setShowPrayerCircles(false)} />
             </motion.div>
           ) : showSettings ? (
-            <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div key="settings" {...slideIn}>
               <button
                 onClick={() => setShowSettings(false)}
                 className="text-primary font-body text-sm mb-4 flex items-center gap-1 hover:underline"
@@ -151,13 +165,7 @@ const Index = () => {
               <SettingsPage />
             </motion.div>
           ) : (
-            <motion.div
-              key={tab}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
+            <motion.div key={tab} {...tabSwitch}>
               {tab === "home" && (
                 <HomeDashboard
                   onNavigate={setTab}
