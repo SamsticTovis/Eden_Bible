@@ -157,7 +157,19 @@ const Index = () => {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
             >
-              {tab === "home" && <HomeDashboard onNavigate={setTab} />}
+              {tab === "home" && (
+                <HomeDashboard
+                  onNavigate={setTab}
+                  onOpenAIChat={() => setShowAIChat(true)}
+                  onOpenPrayerCircles={() => {
+                    if (!requireAuth("join prayer circles")) return;
+                    setShowPrayerCircles(true);
+                    setShowSettings(false);
+                    setShowProfile(false);
+                    setShowAIChat(false);
+                  }}
+                />
+              )}
               {tab === "read" && <FullBibleReader />}
               {tab === "comfort" && <ComfortPage />}
               {tab === "games" && <GamesHub />}

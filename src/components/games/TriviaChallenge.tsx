@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStreak } from "@/hooks/useStreak";
-
+import { useActivityLogger } from "@/hooks/useActivityLogger";
 interface Question {
   id: string;
   question: string;
@@ -23,6 +23,7 @@ const encouragements = {
 
 const TriviaChallenge = () => {
   const { recordActivity } = useStreak();
+  const { logActivity } = useActivityLogger();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -73,6 +74,7 @@ const TriviaChallenge = () => {
     if (currentIndex + 1 >= questions.length) {
       setFinished(true);
       recordActivity();
+      logActivity("game", "Completed Bible Trivia", "Gamepad2");
     } else {
       setCurrentIndex((i) => i + 1);
       setSelected(null);

@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
+import { useActivityLogger } from "@/hooks/useActivityLogger";
 
 interface Circle {
   id: string;
@@ -32,6 +33,7 @@ interface PrayerRequest {
 const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
   const { user } = useAuth();
   const { recordActivity } = useStreak();
+  const { logActivity } = useActivityLogger();
   const [circles, setCircles] = useState<Circle[]>([]);
   const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
   const [requests, setRequests] = useState<PrayerRequest[]>([]);
@@ -144,6 +146,7 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
     setNewVerse("");
     openCircle(selectedCircle);
     recordActivity();
+    logActivity("prayer", `Prayed in ${selectedCircle.name}`, "Heart");
   };
 
   const toggleAmen = async (req: PrayerRequest) => {
