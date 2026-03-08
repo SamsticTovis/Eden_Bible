@@ -5,6 +5,8 @@ import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles } from "lucide
 import { Button } from "@/components/ui/button";
 import { useStreak } from "@/hooks/useStreak";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
+import { useAchievements } from "@/hooks/useAchievements";
+
 interface Question {
   id: string;
   question: string;
