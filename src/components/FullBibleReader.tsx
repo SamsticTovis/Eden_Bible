@@ -26,6 +26,17 @@ interface ContentItem {
 
 const API_BASE = "https://bible.helloao.org/api";
 
+const TRANSLATIONS: { label: string; apiId: string }[] = [
+  { label: "BSB", apiId: "BSB" },
+  { label: "KJV", apiId: "eng-kjv" },
+  { label: "WEB", apiId: "eng-web" },
+  { label: "ASV", apiId: "eng-asv" },
+];
+
+function getApiId(label: string): string {
+  return TRANSLATIONS.find((t) => t.label === label)?.apiId || label;
+}
+
 const OT_BOOKS = new Set([
   "GEN","EXO","LEV","NUM","DEU","JOS","JDG","RUT","1SA","2SA","1KI","2KI",
   "1CH","2CH","EZR","NEH","EST","JOB","PSA","PRO","ECC","SNG","ISA","JER",
