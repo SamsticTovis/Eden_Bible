@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
+import { useActivityLogger } from "@/hooks/useActivityLogger";
 
 interface Circle {
   id: string;
