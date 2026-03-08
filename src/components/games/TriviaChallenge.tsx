@@ -24,6 +24,7 @@ const encouragements = {
 const TriviaChallenge = () => {
   const { recordActivity } = useStreak();
   const { logActivity } = useActivityLogger();
+  const { tryUnlock } = useAchievements();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);

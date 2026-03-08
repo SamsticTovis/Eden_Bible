@@ -159,6 +159,7 @@ const FullBibleReader = () => {
     fetchChapter(selectedBook!.id, chap);
     recordActivity();
     await logActivity("read", `Read ${selectedBook!.commonName} ${chap}`, "BookOpen");
+    tryUnlock("first_chapter");
   };
 
   const changeChapter = (dir: number) => {
