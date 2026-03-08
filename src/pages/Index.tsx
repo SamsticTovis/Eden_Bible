@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Menu } from "lucide-react";
 import BottomNav, { AppTab } from "@/components/BottomNav";
