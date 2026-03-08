@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { getManna, getStreak } from "@/components/MannaTracker";
+import { getManna } from "@/components/MannaTracker";
+import { useStreak } from "@/hooks/useStreak";
 
 interface ProfilePageProps {
   onBack: () => void;
