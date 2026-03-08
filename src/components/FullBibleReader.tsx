@@ -33,7 +33,6 @@ const OT_BOOKS = new Set([
   "HAG","ZEC","MAL"
 ]);
 
-/** Extract plain text from a verse content array */
 function extractVerseText(content: ContentItem["content"]): string {
   if (!content) return "";
   return content
@@ -59,7 +58,7 @@ const FullBibleReader = () => {
   const [headings, setHeadings] = useState<Map<number, string>>(new Map());
   const [loading, setLoading] = useState(false);
   const [booksLoading, setBooksLoading] = useState(true);
-  const [showBooks, setShowBooks] = useState(true);
+  const [view, setView] = useState<"books" | "chapters" | "reader">("books");
   const [searchQuery, setSearchQuery] = useState("");
   const [bookmarkedVerses, setBookmarkedVerses] = useState<Set<string>>(() => {
     try { return new Set(JSON.parse(localStorage.getItem("eden-bookmarks") || "[]")); }
@@ -67,7 +66,6 @@ const FullBibleReader = () => {
   });
   const [activeTab, setActiveTab] = useState<"old" | "new">("old");
 
-  // Fetch books
   useEffect(() => {
     setBooksLoading(true);
     fetch(`${API_BASE}/${translation}/books.json`)
@@ -76,7 +74,6 @@ const FullBibleReader = () => {
         return r.json();
       })
       .then((data) => {
-        // API returns an array directly
         const rawBooks = Array.isArray(data) ? data : data?.books || [];
         const bookList: BookInfo[] = rawBooks.map((b: any) => ({
           id: b.id,
@@ -94,7 +91,6 @@ const FullBibleReader = () => {
       .finally(() => setBooksLoading(false));
   }, [translation]);
 
-  // Fetch chapter — parse the content array correctly
   const fetchChapter = useCallback(async (bookId: string, chap: number) => {
     setLoading(true);
     try {
@@ -137,9 +133,13 @@ const FullBibleReader = () => {
 
   const selectBook = (book: BookInfo) => {
     setSelectedBook(book);
-    setChapter(1);
-    setShowBooks(false);
-    fetchChapter(book.id, 1);
+    setView("chapters");
+  };
+
+  const selectChapter = (chap: number) => {
+    setChapter(chap);
+    setView("reader");
+    fetchChapter(selectedBook!.id, chap);
   };
 
   const changeChapter = (dir: number) => {
@@ -153,7 +153,7 @@ const FullBibleReader = () => {
   const handleTranslationChange = (newT: string) => {
     setTranslation(newT);
     localStorage.setItem("eden-version", newT);
-    if (selectedBook) {
+    if (selectedBook && view === "reader") {
       fetchChapter(selectedBook.id, chapter);
     }
   };
@@ -193,19 +193,19 @@ const FullBibleReader = () => {
   return (
     <div className="max-w-md mx-auto">
       <AnimatePresence mode="wait">
-        {showBooks ? (
+        {view === "books" && (
           <motion.div key="books" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <h2 className="font-display text-2xl text-center mb-1 text-foreground">Bible Reader</h2>
             <p className="text-center text-muted-foreground font-body mb-4 text-sm">Read God's Word 📖</p>
 
             {/* Translation selector */}
-            <div className="flex items-center justify-center gap-2 mb-3">
+            <div className="flex items-center justify-center gap-1.5 mb-3">
               {["BSB", "KJV", "WEB", "ASV"].map((v) => (
                 <button
                   key={v}
                   onClick={() => handleTranslationChange(v)}
-                  className={`px-3 py-1.5 rounded-xl font-body text-xs font-medium transition-all ${
-                    translation === v ? "bg-primary text-primary-foreground shadow-warm" : "bg-card border border-border text-muted-foreground hover:border-primary/30"
+                  className={`px-3 py-1.5 rounded-lg font-body text-xs font-medium transition-all ${
+                    translation === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {v}
@@ -230,15 +230,15 @@ const FullBibleReader = () => {
             </div>
 
             {/* Testament tabs */}
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-1.5 mb-4">
               {(["old", "new"] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setActiveTab(t)}
                   className={`flex-1 py-2.5 rounded-xl font-body text-sm font-medium transition-all ${
                     activeTab === t
-                      ? "bg-primary text-primary-foreground shadow-warm"
-                      : "bg-card border border-border text-muted-foreground hover:border-primary/30"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card border border-border text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {t === "old" ? "Old Testament" : "New Testament"}
@@ -259,29 +259,55 @@ const FullBibleReader = () => {
                 {filteredBooks.map((book, i) => (
                   <motion.button
                     key={book.id}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(i * 0.02, 0.5) }}
+                    transition={{ delay: Math.min(i * 0.015, 0.4) }}
                     onClick={() => selectBook(book)}
-                    className="p-3 rounded-xl bg-card border border-border text-left hover:border-primary/40 hover:shadow-soft transition-all active:scale-[0.98]"
+                    className="p-3 rounded-xl bg-card border border-border text-left hover:border-primary/30 hover:shadow-soft transition-all active:scale-[0.98]"
                   >
                     <p className="font-body text-sm font-medium text-foreground truncate">{book.commonName}</p>
-                    <p className="font-body text-[10px] text-muted-foreground">{book.numberOfChapters} chapters</p>
+                    <p className="font-body text-[10px] text-muted-foreground mt-0.5">{book.numberOfChapters} ch.</p>
                   </motion.button>
                 ))}
               </div>
             )}
           </motion.div>
-        ) : (
+        )}
+
+        {view === "chapters" && selectedBook && (
+          <motion.div key="chapters" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+            <button onClick={() => setView("books")} className="text-primary font-body text-sm flex items-center gap-1 mb-3 hover:underline">
+              <ChevronLeft size={16} /> Books
+            </button>
+            <h2 className="font-display text-xl text-foreground mb-1">{selectedBook.commonName}</h2>
+            <p className="font-body text-sm text-muted-foreground mb-4">Select a chapter</p>
+            <div className="grid grid-cols-5 gap-2 max-h-[60vh] overflow-y-auto">
+              {Array.from({ length: selectedBook.numberOfChapters }, (_, i) => i + 1).map((ch) => (
+                <motion.button
+                  key={ch}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: Math.min(ch * 0.01, 0.5) }}
+                  onClick={() => selectChapter(ch)}
+                  className="aspect-square flex items-center justify-center rounded-xl bg-card border border-border font-body text-sm text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all active:scale-95"
+                >
+                  {ch}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {view === "reader" && selectedBook && (
           <motion.div key="reader" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
             {/* Top bar */}
             <div className="flex items-center gap-2 mb-3">
-              <button onClick={() => setShowBooks(true)} className="text-primary font-body text-sm flex items-center gap-1">
-                <ChevronLeft size={16} /> Books
+              <button onClick={() => setView("chapters")} className="text-primary font-body text-sm flex items-center gap-1 hover:underline">
+                <ChevronLeft size={16} /> Ch.
               </button>
               <div className="flex-1 text-center">
-                <p className="font-display text-base text-foreground">{selectedBook?.commonName} {chapter}</p>
-                <p className="font-body text-[10px] text-muted-foreground uppercase tracking-wide">{translation}</p>
+                <p className="font-display text-base text-foreground">{selectedBook.commonName} {chapter}</p>
+                <p className="font-body text-[10px] text-muted-foreground uppercase tracking-wider">{translation}</p>
               </div>
               <select
                 value={translation}
@@ -299,8 +325,8 @@ const FullBibleReader = () => {
               <Button variant="outline" size="sm" onClick={() => changeChapter(-1)} disabled={chapter <= 1} className="gap-1 font-body text-xs rounded-xl">
                 <ChevronLeft size={14} /> Prev
               </Button>
-              <span className="font-body text-sm text-muted-foreground">Chapter {chapter} of {selectedBook?.numberOfChapters}</span>
-              <Button variant="outline" size="sm" onClick={() => changeChapter(1)} disabled={chapter >= (selectedBook?.numberOfChapters || 1)} className="gap-1 font-body text-xs rounded-xl">
+              <span className="font-body text-xs text-muted-foreground">{chapter} / {selectedBook.numberOfChapters}</span>
+              <Button variant="outline" size="sm" onClick={() => changeChapter(1)} disabled={chapter >= selectedBook.numberOfChapters} className="gap-1 font-body text-xs rounded-xl">
                 Next <ChevronRight size={14} />
               </Button>
             </div>
@@ -317,34 +343,34 @@ const FullBibleReader = () => {
             ) : (
               <div className="flex flex-col gap-0.5 max-h-[60vh] overflow-y-auto pr-1">
                 {verses.map((verse) => {
-                  const key = `${selectedBook?.id}-${chapter}-${verse.number}`;
+                  const key = `${selectedBook.id}-${chapter}-${verse.number}`;
                   const isBookmarked = bookmarkedVerses.has(key);
                   const heading = headings.get(verse.number);
                   return (
                     <div key={verse.number}>
                       {heading && (
-                        <h3 className="font-display text-sm text-primary font-semibold mt-5 mb-2 px-1">
+                        <h3 className="font-display text-sm text-primary mt-5 mb-2 px-1">
                           {heading}
                         </h3>
                       )}
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="group flex gap-2 py-2 px-1 rounded-lg hover:bg-card/80 transition-colors"
+                        className="group flex gap-2 py-2 px-1 rounded-lg hover:bg-muted/50 transition-colors"
                       >
-                        <span className="font-body text-xs text-primary font-bold mt-0.5 w-6 flex-shrink-0 text-right">
+                        <span className="font-body text-xs text-primary/70 font-semibold mt-0.5 w-6 flex-shrink-0 text-right">
                           {verse.number}
                         </span>
                         <div className="flex-1">
-                          <p className="font-body text-foreground leading-relaxed text-[15px]">{verse.text}</p>
+                          <p className="font-body text-foreground leading-[1.75] text-[15px]">{verse.text}</p>
                           <div className="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => toggleBookmark(key)} className="p-1 rounded">
+                            <button onClick={() => toggleBookmark(key)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
                               <Bookmark size={12} className={isBookmarked ? "text-primary fill-primary" : "text-muted-foreground"} />
                             </button>
-                            <button onClick={() => copyVerse(verse)} className="p-1 rounded">
+                            <button onClick={() => copyVerse(verse)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
                               <Copy size={12} className="text-muted-foreground" />
                             </button>
-                            <button onClick={() => shareVerse(verse)} className="p-1 rounded">
+                            <button onClick={() => shareVerse(verse)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
                               <Share2 size={12} className="text-muted-foreground" />
                             </button>
                           </div>

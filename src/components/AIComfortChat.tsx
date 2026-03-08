@@ -29,7 +29,7 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Load chat history from database
+  // Load chat history
   useEffect(() => {
     if (!user) { setHistoryLoaded(true); return; }
     const load = async () => {
@@ -125,7 +125,6 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
         }
       }
 
-      // Save final assistant message
       if (assistantSoFar) {
         await saveMessage({ role: "assistant", content: assistantSoFar });
       }
@@ -140,7 +139,10 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
   if (!historyLoaded) {
     return (
       <div className="max-w-md mx-auto flex items-center justify-center h-40">
-        <p className="font-body text-sm text-muted-foreground animate-pulse">Loading your conversations...</p>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="font-body text-sm text-muted-foreground">Loading conversations...</p>
+        </div>
       </div>
     );
   }
@@ -152,12 +154,12 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
       exit={{ opacity: 0, y: 20 }}
       className="max-w-md mx-auto flex flex-col h-[calc(100vh-10rem)]"
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="font-display text-xl text-foreground">Eden AI Comfort</h2>
-          <p className="font-body text-xs text-muted-foreground">Your private spiritual companion 🕊️</p>
+          <h2 className="font-display text-xl text-foreground">Eden AI</h2>
+          <p className="font-body text-xs text-muted-foreground">Your spiritual companion 🕊️</p>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+        <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full hover:bg-muted">
           <X size={18} />
         </Button>
       </div>
@@ -166,19 +168,19 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
         {messages.map((msg, i) => (
           <motion.div
             key={i}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-3 font-body text-sm leading-relaxed ${
                 msg.role === "user"
-                  ? "bg-primary text-primary-foreground rounded-br-md"
-                  : "bg-card border border-border text-foreground rounded-bl-md"
+                  ? "bg-primary text-primary-foreground rounded-br-sm"
+                  : "bg-card border border-border text-foreground rounded-bl-sm"
               }`}
             >
               {msg.role === "assistant" ? (
-                <div className="prose prose-sm max-w-none dark:prose-invert">
+                <div className="prose prose-sm max-w-none dark:prose-invert [&>p]:mb-1.5 [&>p:last-child]:mb-0">
                   <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
               ) : (
@@ -189,11 +191,11 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
         ))}
         {isLoading && messages[messages.length - 1]?.role === "user" && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-            <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
+            <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3">
               <div className="flex gap-1">
-                <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
             </div>
           </motion.div>
@@ -206,7 +208,7 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
             <button
               key={p}
               onClick={() => send(p)}
-              className="px-3 py-1.5 rounded-full bg-card border border-border font-body text-xs text-muted-foreground hover:border-primary/40 transition-colors"
+              className="px-3 py-1.5 rounded-full bg-card border border-border font-body text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all"
             >
               {p}
             </button>
@@ -227,7 +229,7 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
           onClick={() => send(input)}
           disabled={!input.trim() || isLoading}
           size="icon"
-          className="rounded-xl bg-primary hover:bg-primary/90"
+          className="rounded-xl bg-primary hover:bg-primary/90 transition-all"
         >
           <Send size={16} />
         </Button>

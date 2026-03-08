@@ -6,7 +6,8 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import { User, Settings, BookOpen, Shield, HelpCircle, Info, Users, LogOut } from "lucide-react";
+import { User, Settings, Shield, HelpCircle, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SideDrawerProps {
   open: boolean;
@@ -15,18 +16,17 @@ interface SideDrawerProps {
   onAction?: (action: string) => void;
 }
 
-const menuItems = [
-  { label: "Profile", icon: User, action: "profile" },
-  { label: "Friends", icon: Users, action: "friends" },
-  { label: "Prayer Circles", icon: Shield, action: "prayer-circles" },
-  { label: "Settings", icon: Settings, action: "settings" },
-  { label: "Bible Versions", icon: BookOpen, action: "settings" },
-  { label: "Help", icon: HelpCircle, action: "help" },
-  { label: "About", icon: Info, action: "about" },
-  { label: "Logout", icon: LogOut, action: "logout" },
-];
-
 const SideDrawer = ({ open, onClose, onOpenSettings, onAction }: SideDrawerProps) => {
+  const { user } = useAuth();
+
+  const menuItems = [
+    { label: "Profile", icon: User, action: "profile" },
+    { label: "Prayer Circles", icon: Shield, action: "prayer-circles" },
+    { label: "Settings", icon: Settings, action: "settings" },
+    { label: "Help", icon: HelpCircle, action: "help" },
+    { label: "Logout", icon: LogOut, action: "logout", destructive: true },
+  ];
+
   const handleClick = (action: string) => {
     if (onAction) {
       onAction(action);
@@ -41,18 +41,24 @@ const SideDrawer = ({ open, onClose, onOpenSettings, onAction }: SideDrawerProps
   return (
     <Drawer open={open} onOpenChange={(o) => !o && onClose()}>
       <DrawerContent>
-        <DrawerHeader>
-          <DrawerTitle className="font-display text-xl">Eden Bible ✨</DrawerTitle>
-          <DrawerDescription className="font-body text-sm">Menu & Settings</DrawerDescription>
+        <DrawerHeader className="pb-2">
+          <DrawerTitle className="font-display text-xl">Eden Bible</DrawerTitle>
+          <DrawerDescription className="font-body text-sm">
+            {user?.email || "Menu"}
+          </DrawerDescription>
         </DrawerHeader>
-        <div className="px-4 pb-6 flex flex-col gap-1">
+        <div className="px-4 pb-6 flex flex-col gap-0.5">
           {menuItems.map((item) => (
             <button
               key={item.label}
               onClick={() => handleClick(item.action)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl font-body text-sm text-foreground hover:bg-muted transition-colors text-left"
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl font-body text-sm transition-colors text-left ${
+                item.destructive
+                  ? "text-destructive hover:bg-destructive/5"
+                  : "text-foreground hover:bg-muted"
+              }`}
             >
-              <item.icon size={18} className="text-primary" />
+              <item.icon size={18} className={item.destructive ? "text-destructive" : "text-primary"} />
               {item.label}
             </button>
           ))}

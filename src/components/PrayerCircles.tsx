@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Users, Heart, BookOpen, ArrowLeft, Send } from "lucide-react";
+import { Plus, Users, Heart, BookOpen, ArrowLeft, Send, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +15,7 @@ interface Circle {
   created_by: string;
   max_members: number;
   created_at: string;
+  invite_code: string | null;
 }
 
 interface PrayerRequest {
@@ -70,7 +71,6 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
       .select()
       .single();
     if (error) { toast({ title: error.message, variant: "destructive" }); return; }
-    // Auto-join as creator
     await supabase.from("circle_members").insert({ circle_id: data.id, user_id: user!.id });
     setNewName("");
     setNewDesc("");
@@ -81,12 +81,25 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
 
   const joinCircle = async () => {
     if (!joinCode.trim()) return;
-    // Join by circle ID
-    const { error } = await supabase.from("circle_members").insert({ circle_id: joinCode.trim(), user_id: user!.id });
-    if (error) { toast({ title: "Could not join circle", variant: "destructive" }); return; }
+    const code = joinCode.trim().toUpperCase();
+    // Try invite code first, then raw ID
+    const { data: circle } = await supabase
+      .from("prayer_circles")
+      .select("id")
+      .eq("invite_code", code)
+      .maybeSingle();
+
+    const circleId = circle?.id || joinCode.trim();
+    const { error } = await supabase.from("circle_members").insert({ circle_id: circleId, user_id: user!.id });
+    if (error) { toast({ title: "Could not join circle. Check the code and try again.", variant: "destructive" }); return; }
     setJoinCode("");
     loadCircles();
     toast({ title: "Joined circle! 🎉" });
+  };
+
+  const copyInviteCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    toast({ title: "Invite code copied! 📋" });
   };
 
   const openCircle = async (circle: Circle) => {
@@ -98,7 +111,7 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
       .order("created_at", { ascending: false });
     
     const reqs = (data || []) as PrayerRequest[];
-    // Load reaction counts
+    // Load reaction counts in batch
     for (const req of reqs) {
       const { count } = await supabase
         .from("prayer_reactions")
@@ -142,16 +155,22 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
   if (selectedCircle) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md mx-auto">
-        <button onClick={() => setSelectedCircle(null)} className="flex items-center gap-1 text-primary font-body text-sm mb-4">
+        <button onClick={() => setSelectedCircle(null)} className="flex items-center gap-1 text-primary font-body text-sm mb-4 hover:underline">
           <ArrowLeft size={16} /> Back to circles
         </button>
         <h2 className="font-display text-xl text-foreground mb-1">{selectedCircle.name}</h2>
         {selectedCircle.description && (
-          <p className="font-body text-sm text-muted-foreground mb-4">{selectedCircle.description}</p>
+          <p className="font-body text-sm text-muted-foreground mb-3">{selectedCircle.description}</p>
         )}
-        <p className="font-body text-xs text-muted-foreground mb-4">
-          Share this ID to invite: <span className="text-primary font-medium select-all">{selectedCircle.id}</span>
-        </p>
+        {selectedCircle.invite_code && (
+          <button
+            onClick={() => copyInviteCode(selectedCircle.invite_code!)}
+            className="flex items-center gap-2 font-body text-xs text-muted-foreground mb-4 bg-muted px-3 py-1.5 rounded-lg hover:bg-muted/80 transition-colors"
+          >
+            <Copy size={12} />
+            Invite code: <span className="text-primary font-semibold">{selectedCircle.invite_code}</span>
+          </button>
+        )}
 
         {/* New request */}
         <div className="bg-card border border-border rounded-2xl p-4 mb-4 space-y-2">
@@ -182,7 +201,7 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
               animate={{ opacity: 1, y: 0 }}
               className="bg-card border border-border rounded-2xl p-4"
             >
-              <p className="font-body text-sm text-foreground mb-2">{req.content}</p>
+              <p className="font-body text-sm text-foreground mb-2 leading-relaxed">{req.content}</p>
               {req.verse_reference && (
                 <p className="font-body text-xs text-primary flex items-center gap-1 mb-2">
                   <BookOpen size={12} /> {req.verse_reference}
@@ -194,9 +213,9 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
                 </span>
                 <button
                   onClick={() => toggleAmen(req)}
-                  className={`flex items-center gap-1 px-3 py-1 rounded-full font-body text-xs transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-body text-xs transition-all ${
                     req.user_reacted
-                      ? "bg-primary/20 text-primary"
+                      ? "bg-primary/15 text-primary"
                       : "bg-muted text-muted-foreground hover:bg-primary/10"
                   }`}
                 >
@@ -218,7 +237,7 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-md mx-auto">
-      <button onClick={onBack} className="flex items-center gap-1 text-primary font-body text-sm mb-4">
+      <button onClick={onBack} className="flex items-center gap-1 text-primary font-body text-sm mb-4 hover:underline">
         <ArrowLeft size={16} /> Back
       </button>
       <h2 className="font-display text-2xl text-foreground mb-1">Prayer Circles</h2>
@@ -229,7 +248,7 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
         <Input
           value={joinCode}
           onChange={(e) => setJoinCode(e.target.value)}
-          placeholder="Paste circle ID to join..."
+          placeholder="Enter invite code to join..."
           className="flex-1 bg-card border-border font-body text-sm rounded-xl"
         />
         <Button onClick={joinCircle} variant="outline" className="rounded-xl font-body text-sm">Join</Button>
@@ -258,19 +277,19 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
       )}
 
       {/* Circles list */}
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {circles.map((c) => (
           <motion.button
             key={c.id}
             onClick={() => openCircle(c)}
             whileTap={{ scale: 0.98 }}
-            className="w-full bg-card border border-border rounded-2xl p-4 text-left hover:border-primary/30 transition-colors"
+            className="w-full bg-card border border-border rounded-2xl p-4 text-left hover:border-primary/20 hover:shadow-soft transition-all"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center">
                 <Users size={18} className="text-primary" />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <h3 className="font-body text-sm font-medium text-foreground">{c.name}</h3>
                 {c.description && <p className="font-body text-xs text-muted-foreground line-clamp-1">{c.description}</p>}
               </div>
