@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStreak } from "@/hooks/useStreak";
-
+import { useActivityLogger } from "@/hooks/useActivityLogger";
 interface Question {
   id: string;
   question: string;
