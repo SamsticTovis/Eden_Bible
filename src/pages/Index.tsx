@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Menu } from "lucide-react";
 import BottomNav, { AppTab } from "@/components/BottomNav";
 import HomeDashboard from "@/components/HomeDashboard";
@@ -62,11 +63,29 @@ const Index = () => {
       setShowProfile(false);
       setShowAIChat(false);
       setDrawerOpen(false);
+    } else if (action === "delete-account") {
+      handleDeleteAccount();
     } else if (action === "logout") {
       signOut();
       setDrawerOpen(false);
     } else {
       setDrawerOpen(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-account");
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      await supabase.auth.signOut();
+      localStorage.removeItem("eden-guest-session");
+      localStorage.removeItem("eden-manna");
+      localStorage.removeItem("eden-streak");
+      localStorage.removeItem("eden-last-login");
+    } catch (e: any) {
+      const { toast } = await import("@/hooks/use-toast");
+      toast({ title: "Error", description: e.message || "Failed to delete account." });
     }
   };
 
