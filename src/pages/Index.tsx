@@ -12,6 +12,7 @@ import AIComfortChat from "@/components/AIComfortChat";
 import SideDrawer from "@/components/SideDrawer";
 import AuthPage from "@/components/AuthPage";
 import PrayerCircles from "@/components/PrayerCircles";
+import ProfilePage from "@/components/ProfilePage";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
