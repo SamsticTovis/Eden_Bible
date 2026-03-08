@@ -153,6 +153,7 @@ const FullBibleReader = () => {
     setChapter(chap);
     setView("reader");
     fetchChapter(selectedBook!.id, chap);
+    recordActivity();
   };
 
   const changeChapter = (dir: number) => {

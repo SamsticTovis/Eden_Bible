@@ -143,6 +143,7 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
     setNewRequest("");
     setNewVerse("");
     openCircle(selectedCircle);
+    recordActivity();
   };
 
   const toggleAmen = async (req: PrayerRequest) => {

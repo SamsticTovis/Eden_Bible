@@ -69,6 +69,7 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
     setMessages(allMessages);
     setInput("");
     setIsLoading(true);
+    recordActivity();
 
     await saveMessage(userMsg);
 

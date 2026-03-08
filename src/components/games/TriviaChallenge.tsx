@@ -72,6 +72,7 @@ const TriviaChallenge = () => {
   const handleNext = () => {
     if (currentIndex + 1 >= questions.length) {
       setFinished(true);
+      recordActivity();
     } else {
       setCurrentIndex((i) => i + 1);
       setSelected(null);
