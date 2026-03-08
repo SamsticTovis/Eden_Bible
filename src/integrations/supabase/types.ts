@@ -265,6 +265,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_progress: {
+        Row: {
+          created_at: string
+          daily_streak: number
+          id: string
+          last_activity_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_streak?: number
+          id?: string
+          last_activity_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       verses: {
         Row: {
           book: string | null

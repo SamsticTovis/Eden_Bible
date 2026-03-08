@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useStreak } from "@/hooks/useStreak";
 
 interface Question {
   id: string;
@@ -21,6 +22,7 @@ const encouragements = {
 };
 
 const TriviaChallenge = () => {
+  const { recordActivity } = useStreak();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -70,6 +72,7 @@ const TriviaChallenge = () => {
   const handleNext = () => {
     if (currentIndex + 1 >= questions.length) {
       setFinished(true);
+      recordActivity();
     } else {
       setCurrentIndex((i) => i + 1);
       setSelected(null);

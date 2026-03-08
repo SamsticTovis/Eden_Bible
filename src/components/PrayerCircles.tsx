@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { useStreak } from "@/hooks/useStreak";
 
 interface Circle {
   id: string;
@@ -30,6 +31,7 @@ interface PrayerRequest {
 
 const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
   const { user } = useAuth();
+  const { recordActivity } = useStreak();
   const [circles, setCircles] = useState<Circle[]>([]);
   const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
   const [requests, setRequests] = useState<PrayerRequest[]>([]);
@@ -141,6 +143,7 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
     setNewRequest("");
     setNewVerse("");
     openCircle(selectedCircle);
+    recordActivity();
   };
 
   const toggleAmen = async (req: PrayerRequest) => {

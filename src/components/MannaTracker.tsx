@@ -1,9 +1,8 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Sparkles } from "lucide-react";
+import { useStreak } from "@/hooks/useStreak";
 
 const MANNA_KEY = "eden-manna";
-const STREAK_KEY = "eden-streak";
-const LAST_LOGIN_KEY = "eden-last-login";
 
 export const getManna = (): number => {
   return parseInt(localStorage.getItem(MANNA_KEY) || "0", 10);
@@ -14,31 +13,9 @@ export const addManna = (points: number) => {
   localStorage.setItem(MANNA_KEY, String(current + points));
 };
 
-export const getStreak = (): number => {
-  const today = new Date().toISOString().split("T")[0];
-  const lastLogin = localStorage.getItem(LAST_LOGIN_KEY);
-  let streak = parseInt(localStorage.getItem(STREAK_KEY) || "0", 10);
-
-  if (lastLogin === today) return streak;
-
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split("T")[0];
-
-  if (lastLogin === yesterdayStr) {
-    streak += 1;
-  } else if (lastLogin !== today) {
-    streak = 1;
-  }
-
-  localStorage.setItem(STREAK_KEY, String(streak));
-  localStorage.setItem(LAST_LOGIN_KEY, today);
-  return streak;
-};
-
 const MannaTracker = () => {
   const manna = getManna();
-  const streak = getStreak();
+  const { streak, justIncremented } = useStreak();
 
   return (
     <div className="flex items-center gap-4">
@@ -48,8 +25,31 @@ const MannaTracker = () => {
         animate={{ opacity: 1, scale: 1 }}
         className="flex items-center gap-1.5 bg-accent/15 px-3 py-1.5 rounded-full"
       >
-        <Flame size={16} className="text-accent" />
-        <span className="font-body text-sm font-semibold text-foreground">{streak}</span>
+        <AnimatePresence mode="wait">
+          {justIncremented ? (
+            <motion.div
+              key="fire-anim"
+              initial={{ scale: 1.8, rotate: -10 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 12 }}
+            >
+              <Flame size={16} className="text-accent" />
+            </motion.div>
+          ) : (
+            <motion.div key="fire-static">
+              <Flame size={16} className="text-accent" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <motion.span
+          key={streak}
+          initial={justIncremented ? { scale: 1.4, color: "hsl(var(--accent))" } : {}}
+          animate={{ scale: 1, color: "hsl(var(--foreground))" }}
+          transition={{ duration: 0.5 }}
+          className="font-body text-sm font-semibold"
+        >
+          {streak}
+        </motion.span>
       </motion.div>
 
       {/* Manna */}

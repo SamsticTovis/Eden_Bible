@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Search, X, Bookmark, Copy, Share2 } from "lu
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { useStreak } from "@/hooks/useStreak";
 
 interface BookInfo {
   id: string;
@@ -61,6 +62,7 @@ function extractVerseText(content: ContentItem["content"]): string {
 }
 
 const FullBibleReader = () => {
+  const { recordActivity } = useStreak();
   const [translation, setTranslation] = useState(() => localStorage.getItem("eden-version") || "BSB");
   const [books, setBooks] = useState<BookInfo[]>([]);
   const [selectedBook, setSelectedBook] = useState<BookInfo | null>(null);
@@ -151,6 +153,7 @@ const FullBibleReader = () => {
     setChapter(chap);
     setView("reader");
     fetchChapter(selectedBook!.id, chap);
+    recordActivity();
   };
 
   const changeChapter = (dir: number) => {
