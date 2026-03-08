@@ -112,21 +112,29 @@ const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles }: HomeDa
     loadActivity();
   }, [user]);
 
-  // Fetch stats
+  // Fetch stats and check achievements
   useEffect(() => {
     if (!user) return;
     const loadStats = async () => {
       const [profileRes, circlesRes] = await Promise.all([
-        supabase.from("profiles").select("games_won").eq("id", user.id).single(),
+        supabase.from("profiles").select("games_won, chapters_read").eq("id", user.id).single(),
         supabase.from("circle_members").select("id", { count: "exact", head: true }).eq("user_id", user.id),
       ]);
-      setStats({
-        gamesPlayed: profileRes.data?.games_won || 0,
-        circlesJoined: circlesRes.count || 0,
+      const gamesPlayed = profileRes.data?.games_won || 0;
+      const circlesJoined = circlesRes.count || 0;
+      const chaptersRead = profileRes.data?.chapters_read || 0;
+      setStats({ gamesPlayed, circlesJoined });
+
+      // Check achievements based on current stats
+      checkAchievements({
+        chaptersRead,
+        streak,
+        circlesJoined,
+        gamesWon: gamesPlayed,
       });
     };
     loadStats();
-  }, [user]);
+  }, [user, streak, checkAchievements]);
 
   const quickActions = [
     { label: "Read Bible", desc: "Explore God's Word", icon: BookOpen, action: () => onNavigate("read") },
