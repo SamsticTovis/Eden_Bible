@@ -12,6 +12,7 @@ import AIComfortChat from "@/components/AIComfortChat";
 import SideDrawer from "@/components/SideDrawer";
 import AuthPage from "@/components/AuthPage";
 import PrayerCircles from "@/components/PrayerCircles";
+import ProfilePage from "@/components/ProfilePage";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -22,6 +23,7 @@ const Index = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showPrayerCircles, setShowPrayerCircles] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   if (loading) {
     return (
@@ -46,10 +48,18 @@ const Index = () => {
 
   const handleDrawerAction = (action: string) => {
     if (action === "settings") handleOpenSettings();
-    else if (action === "prayer-circles") {
+    else if (action === "profile") {
+      if (!requireAuth("view your profile")) return;
+      setShowProfile(true);
+      setShowSettings(false);
+      setShowPrayerCircles(false);
+      setShowAIChat(false);
+      setDrawerOpen(false);
+    } else if (action === "prayer-circles") {
       if (!requireAuth("join prayer circles")) return;
       setShowPrayerCircles(true);
       setShowSettings(false);
+      setShowProfile(false);
       setShowAIChat(false);
       setDrawerOpen(false);
     } else if (action === "logout") {
@@ -102,6 +112,10 @@ const Index = () => {
             <motion.div key="ai-chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <AIComfortChat onClose={() => setShowAIChat(false)} />
             </motion.div>
+          ) : showProfile ? (
+            <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <ProfilePage onBack={() => setShowProfile(false)} />
+            </motion.div>
           ) : showPrayerCircles ? (
             <motion.div key="prayer-circles" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <PrayerCircles onBack={() => setShowPrayerCircles(false)} />
@@ -134,7 +148,7 @@ const Index = () => {
         </AnimatePresence>
       </main>
 
-      <BottomNav active={tab} onChange={(t) => { setShowAIChat(false); setShowSettings(false); setShowPrayerCircles(false); setTab(t); }} />
+      <BottomNav active={tab} onChange={(t) => { setShowAIChat(false); setShowSettings(false); setShowPrayerCircles(false); setShowProfile(false); setTab(t); }} />
     </div>
   );
 };
