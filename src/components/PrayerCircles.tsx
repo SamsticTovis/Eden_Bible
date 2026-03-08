@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
+import { useAchievements } from "@/hooks/useAchievements";
 
 interface Circle {
   id: string;
