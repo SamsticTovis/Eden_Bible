@@ -292,6 +292,33 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_sermons: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          title: string
+          topic: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          title: string
+          topic: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          title?: string
+          topic?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_name: string
