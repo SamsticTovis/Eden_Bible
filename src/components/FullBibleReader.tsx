@@ -164,7 +164,7 @@ const FullBibleReader = () => {
   const handleTranslationChange = (newT: string) => {
     setTranslation(newT);
     localStorage.setItem("eden-version", newT);
-    if (selectedBook && view === "reader") {
+    if (view === "reader" && selectedBook) {
       fetchChapter(selectedBook.id, chapter);
     }
   };
