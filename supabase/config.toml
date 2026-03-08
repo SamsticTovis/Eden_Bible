@@ -2,3 +2,12 @@ project_id = "dyqxgdlskyjhvlgfufez"
 
 [functions.ai-comfort]
 verify_jwt = false
+
+[functions.generate-sermon]
+verify_jwt = false
+
+[functions.generate-quiz]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false

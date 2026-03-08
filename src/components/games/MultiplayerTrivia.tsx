@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles, Users, Bot } from "lucide-react";
+import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles, Users, Bot, BookOpen, Brain, Zap, Shuffle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { addManna } from "@/components/MannaTracker";
+import { toast } from "@/hooks/use-toast";
 
 interface Question {
-  id: string;
   question: string;
   option_a: string;
   option_b: string;
@@ -14,6 +15,8 @@ interface Question {
   option_d: string;
   correct_option: string;
   difficulty: string;
+  category?: string;
+  format?: string;
 }
 
 interface Player {
@@ -24,7 +27,14 @@ interface Player {
 }
 
 const BOT_NAMES = ["Elijah 🤖", "Ruth 🤖", "Moses 🤖", "Esther 🤖"];
-const BOT_ACCURACY: Record<string, number> = { easy: 0.8, medium: 0.6, hard: 0.4 };
+const BOT_ACCURACY: Record<string, number> = { easy: 0.8, medium: 0.6, hard: 0.4, expert: 0.25, mixed: 0.5 };
+
+const MATCH_TYPES = [
+  { key: "easy", label: "Easy Match", desc: "Beginner-friendly questions", icon: BookOpen },
+  { key: "medium", label: "Standard Match", desc: "Moderate challenge", icon: Brain },
+  { key: "hard", label: "Hard Match", desc: "For experienced players", icon: Zap },
+  { key: "mixed", label: "Mixed Mode", desc: "Varying difficulty", icon: Shuffle },
+];
 
 interface MultiplayerTriviaProps {
   gameType: string;
@@ -33,35 +43,43 @@ interface MultiplayerTriviaProps {
 }
 
 const MultiplayerTrivia = ({ gameType, gameLabel, dbGameType }: MultiplayerTriviaProps) => {
-  const [phase, setPhase] = useState<"lobby" | "waiting" | "playing" | "results">("lobby");
+  const [phase, setPhase] = useState<"lobby" | "loading" | "waiting" | "playing" | "results">("lobby");
+  const [matchDifficulty, setMatchDifficulty] = useState("medium");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
-  const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(10);
 
   const myPlayer = players[0];
 
-  const startGame = async () => {
-    setLoading(true);
-    const { data } = await supabase.from("game_questions").select("*").eq("game_type", dbGameType);
-    const qs = data ? [...data].sort(() => Math.random() - 0.5).slice(0, 7) : [];
-    setQuestions(qs);
-    
-    // Start with just the player, wait for others
-    setPlayers([{ name: "You", score: 0, isBot: false, answered: false }]);
-    setPhase("waiting");
-    setCountdown(10);
-    setLoading(false);
+  const startGame = async (diff: string) => {
+    setMatchDifficulty(diff);
+    setPhase("loading");
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-quiz", {
+        body: { difficulty: diff, count: 10, mode: "multiplayer" },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const qs = data.questions || [];
+      if (qs.length === 0) throw new Error("No questions generated");
+      setQuestions(qs);
+      setPlayers([{ name: "You", score: 0, isBot: false, answered: false }]);
+      setPhase("waiting");
+      setCountdown(10);
+    } catch (e: any) {
+      console.error("Quiz generation failed:", e);
+      toast({ title: "Failed to generate quiz", description: e.message || "Please try again.", variant: "destructive" });
+      setPhase("lobby");
+    }
   };
 
-  // Countdown timer for waiting phase — add bots after 10s
+  // Countdown — add bots after 10s
   useEffect(() => {
     if (phase !== "waiting") return;
     if (countdown <= 0) {
-      // Add AI bots
-      const botCount = 2 + Math.floor(Math.random() * 2); // 2-3 bots
+      const botCount = 2 + Math.floor(Math.random() * 2);
       const bots: Player[] = BOT_NAMES.slice(0, botCount).map((name) => ({
         name, score: 0, isBot: true, answered: false,
       }));
@@ -76,24 +94,22 @@ const MultiplayerTrivia = ({ gameType, gameLabel, dbGameType }: MultiplayerTrivi
   }, [phase, countdown]);
 
   const question = questions[currentIndex];
-  const options = question ? [
-    { key: "A", text: question.option_a },
-    { key: "B", text: question.option_b },
-    { key: "C", text: question.option_c },
-    { key: "D", text: question.option_d },
-  ] : [];
-  const isCorrect = selected === question?.correct_option;
+  const options = question
+    ? [
+        { key: "A", text: question.option_a },
+        { key: "B", text: question.option_b },
+        ...(question.option_c ? [{ key: "C", text: question.option_c }] : []),
+        ...(question.option_d ? [{ key: "D", text: question.option_d }] : []),
+      ].filter((o) => o.text)
+    : [];
 
   const handleSelect = (key: string) => {
     if (selected || phase !== "playing") return;
     setSelected(key);
     const correct = key === question.correct_option;
-    
-    // Update player score
     setPlayers((prev) => prev.map((p, i) => {
       if (i === 0) return { ...p, score: correct ? p.score + 1 : p.score, answered: true };
-      // Bots answer
-      const botCorrect = Math.random() < (BOT_ACCURACY[question.difficulty] ?? 0.5);
+      const botCorrect = Math.random() < (BOT_ACCURACY[question.difficulty] ?? BOT_ACCURACY[matchDifficulty] ?? 0.5);
       return { ...p, score: botCorrect ? p.score + 1 : p.score, answered: true };
     }));
   };
@@ -118,19 +134,43 @@ const MultiplayerTrivia = ({ gameType, gameLabel, dbGameType }: MultiplayerTrivi
     setSelected(null);
   };
 
-  // LOBBY
+  // LOBBY — difficulty selection
   if (phase === "lobby") {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-        <div className="text-5xl mb-4">⚔️</div>
-        <h3 className="font-display text-2xl mb-2 text-foreground">{gameLabel}</h3>
-        <p className="text-muted-foreground font-body text-sm mb-6">
-          Compete against other players! AI opponents join if no one else does.
-        </p>
-        <Button onClick={startGame} disabled={loading} className="gap-2 bg-primary text-primary-foreground">
-          {loading ? "Loading…" : "Find Match"}
-        </Button>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+        <div className="text-center mb-4">
+          <div className="text-5xl mb-3">⚔️</div>
+          <h3 className="font-display text-2xl text-foreground mb-1">{gameLabel}</h3>
+          <p className="text-muted-foreground font-body text-sm">Choose match difficulty</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {MATCH_TYPES.map((m) => (
+            <motion.button
+              key={m.key}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => startGame(m.key)}
+              className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card border border-border shadow-soft hover:border-primary/30 transition-all"
+            >
+              <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center">
+                <m.icon size={22} className="text-primary" />
+              </div>
+              <span className="font-display text-sm text-foreground">{m.label}</span>
+              <span className="font-body text-[10px] text-muted-foreground text-center">{m.desc}</span>
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
+    );
+  }
+
+  // LOADING
+  if (phase === "loading") {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+        <p className="font-body text-sm text-muted-foreground">Generating match questions…</p>
+      </div>
     );
   }
 
@@ -142,12 +182,7 @@ const MultiplayerTrivia = ({ gameType, gameLabel, dbGameType }: MultiplayerTrivi
         <h3 className="font-display text-xl mb-2 text-foreground">Searching for players…</h3>
         <p className="text-muted-foreground font-body text-sm mb-2">AI opponents join in {countdown}s</p>
         <div className="w-32 mx-auto bg-muted rounded-full h-2">
-          <motion.div
-            className="bg-primary h-2 rounded-full"
-            initial={{ width: "100%" }}
-            animate={{ width: "0%" }}
-            transition={{ duration: 10, ease: "linear" }}
-          />
+          <motion.div className="bg-primary h-2 rounded-full" initial={{ width: "100%" }} animate={{ width: "0%" }} transition={{ duration: 10, ease: "linear" }} />
         </div>
       </motion.div>
     );
@@ -160,9 +195,10 @@ const MultiplayerTrivia = ({ gameType, gameLabel, dbGameType }: MultiplayerTrivi
     return (
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
         <div className="text-6xl mb-4">{rank === 1 ? "🏆" : rank === 2 ? "🥈" : "🥉"}</div>
-        <h3 className="font-display text-2xl mb-4 text-foreground">
+        <h3 className="font-display text-2xl mb-2 text-foreground">
           {rank === 1 ? "You Won!" : `You placed #${rank}`}
         </h3>
+        <Badge variant="outline" className="mb-4 capitalize">{matchDifficulty} mode</Badge>
         <div className="bg-card border border-border rounded-2xl p-4 mb-6">
           {sorted.map((p, i) => (
             <div key={p.name} className={`flex items-center justify-between py-2 ${i > 0 ? "border-t border-border" : ""}`}>
@@ -179,9 +215,12 @@ const MultiplayerTrivia = ({ gameType, gameLabel, dbGameType }: MultiplayerTrivi
           <Sparkles size={14} className="text-primary" />
           <span className="font-body text-sm text-primary">+{(myPlayer?.score || 0) * 2} Manna</span>
         </div>
-        <Button onClick={handleRestart} className="gap-2 bg-primary text-primary-foreground">
-          <RotateCcw size={16} /> Play Again
-        </Button>
+        <div className="flex gap-3 justify-center">
+          <Button onClick={() => startGame(matchDifficulty)} className="gap-2 bg-primary text-primary-foreground">
+            <RotateCcw size={16} /> Rematch
+          </Button>
+          <Button variant="outline" onClick={handleRestart}>Change Mode</Button>
+        </div>
       </motion.div>
     );
   }
@@ -202,8 +241,21 @@ const MultiplayerTrivia = ({ gameType, gameLabel, dbGameType }: MultiplayerTrivi
         ))}
       </div>
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3">
         <span className="text-sm text-muted-foreground font-body">{currentIndex + 1} / {questions.length}</span>
+      </div>
+
+      {/* Badges */}
+      <div className="flex gap-2 mb-3 flex-wrap">
+        <Badge variant="outline" className={`text-[10px] capitalize ${
+          question.difficulty === "easy" ? "border-primary/30 text-primary" :
+          question.difficulty === "medium" ? "border-accent/30 text-accent" :
+          "border-destructive/30 text-destructive"
+        }`}>
+          {question.difficulty}
+        </Badge>
+        {question.category && <Badge variant="secondary" className="text-[10px]">{question.category}</Badge>}
+        {question.format && <Badge variant="secondary" className="text-[10px]">{question.format}</Badge>}
       </div>
 
       <AnimatePresence mode="wait">
