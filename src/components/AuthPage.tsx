@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +13,18 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleEmail = async () => {
     if (!email || !password) return;
     setLoading(true);
     try {
       if (mode === "signup") {
+        if (password.length < 6) {
+          toast({ title: "Password must be at least 6 characters", variant: "destructive" });
+          setLoading(false);
+          return;
+        }
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -54,16 +60,16 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-5">
+    <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-sm"
       >
-        <div className="text-center mb-8">
-          <h1 className="font-display text-3xl text-foreground mb-2">Eden Bible ✨</h1>
+        <div className="text-center mb-10">
+          <h1 className="font-display text-4xl text-foreground mb-2">Eden Bible</h1>
           <p className="font-body text-sm text-muted-foreground">
-            {mode === "login" ? "Welcome back, friend" : "Begin your journey"}
+            {mode === "login" ? "Welcome back" : "Begin your journey"}
           </p>
         </div>
 
@@ -72,7 +78,7 @@ const AuthPage = () => {
             onClick={handleGoogle}
             disabled={loading}
             variant="outline"
-            className="w-full rounded-xl h-12 font-body text-sm gap-2 border-border hover:bg-muted"
+            className="w-full rounded-xl h-12 font-body text-sm gap-3 border-border hover:bg-muted transition-all"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
@@ -118,18 +124,31 @@ const AuthPage = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              type="password"
-              className="pl-10 rounded-xl h-11 bg-card border-border font-body text-sm"
+              type={showPassword ? "text" : "password"}
+              className="pl-10 pr-10 rounded-xl h-11 bg-card border-border font-body text-sm"
               onKeyDown={(e) => e.key === "Enter" && handleEmail()}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
           </div>
           <Button
             onClick={handleEmail}
             disabled={loading || !email || !password}
-            className="w-full rounded-xl h-11 font-body text-sm bg-primary hover:bg-primary/90 gap-2"
+            className="w-full rounded-xl h-11 font-body text-sm bg-primary hover:bg-primary/90 gap-2 transition-all"
           >
-            {mode === "login" ? "Sign In" : "Create Account"}
-            <ArrowRight size={16} />
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                {mode === "login" ? "Sign In" : "Create Account"}
+                <ArrowRight size={16} />
+              </>
+            )}
           </Button>
         </div>
 

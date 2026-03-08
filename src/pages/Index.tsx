@@ -26,7 +26,10 @@ const Index = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-body text-muted-foreground animate-pulse">Loading...</p>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="font-body text-sm text-muted-foreground">Loading Eden...</p>
+        </div>
       </div>
     );
   }
@@ -58,20 +61,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <header className="bg-card/80 backdrop-blur-sm border-b border-border sticky top-0 z-50">
+      <header className="bg-card/90 backdrop-blur-md border-b border-border sticky top-0 z-50">
         <div className="flex items-center justify-between px-5 pt-8 pb-3 max-w-lg mx-auto">
           <motion.h1
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="font-display text-xl text-foreground"
+            className="font-display text-xl text-foreground tracking-tight"
           >
-            Eden Bible ✨
+            Eden Bible
           </motion.h1>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="p-2 rounded-xl hover:bg-muted transition-colors"
+            className="p-2 rounded-xl hover:bg-muted transition-colors active:scale-95"
           >
-            <Menu size={22} className="text-foreground" />
+            <Menu size={20} className="text-muted-foreground" />
           </button>
         </div>
       </header>
@@ -99,7 +102,7 @@ const Index = () => {
             <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <button
                 onClick={() => setShowSettings(false)}
-                className="text-primary font-body text-sm mb-4 flex items-center gap-1"
+                className="text-primary font-body text-sm mb-4 flex items-center gap-1 hover:underline"
               >
                 ← Back
               </button>
@@ -108,10 +111,10 @@ const Index = () => {
           ) : (
             <motion.div
               key={tab}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
             >
               {tab === "home" && <HomeDashboard onNavigate={setTab} />}
               {tab === "read" && <FullBibleReader />}
