@@ -63,6 +63,7 @@ const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles }: HomeDa
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [stats, setStats] = useState({ gamesPlayed: 0, circlesJoined: 0 });
   const manna = getManna();
+  const { unlocked, checkAchievements } = useAchievements();
 
   // Fetch daily devotional from Bible API
   useEffect(() => {
