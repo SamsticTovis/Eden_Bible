@@ -105,7 +105,7 @@ const FullBibleReader = () => {
   const fetchChapter = useCallback(async (bookId: string, chap: number) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/${translation}/${bookId}/${chap}.json`);
+      const res = await fetch(`${API_BASE}/${getApiId(translation)}/${bookId}/${chap}.json`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
