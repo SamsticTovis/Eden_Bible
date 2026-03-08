@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { useStreak } from "@/hooks/useStreak";
+import { useActivityLogger } from "@/hooks/useActivityLogger";
 
 interface BookInfo {
   id: string;
