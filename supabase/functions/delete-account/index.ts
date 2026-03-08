@@ -70,6 +70,7 @@ serve(async (req) => {
     await supabaseAdmin.from("user_progress").delete().eq("user_id", userId);
     await supabaseAdmin.from("recent_activity").delete().eq("user_id", userId);
     await supabaseAdmin.from("user_achievements").delete().eq("user_id", userId);
+    await supabaseAdmin.from("saved_sermons").delete().eq("user_id", userId);
     await supabaseAdmin.from("profiles").delete().eq("id", userId);
 
     // 6. Storage — delete avatar folder

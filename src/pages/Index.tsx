@@ -7,6 +7,7 @@ import FullBibleReader from "@/components/FullBibleReader";
 import ComfortPage from "@/components/ComfortPage";
 import GamesHub from "@/components/GamesHub";
 import JourneyPage from "@/components/JourneyPage";
+import SermonsPage from "@/components/SermonsPage";
 import SettingsPage from "@/components/SettingsPage";
 import FloatingAssistant from "@/components/FloatingAssistant";
 import AIComfortChat from "@/components/AIComfortChat";
@@ -174,6 +175,7 @@ const Index = () => {
               {tab === "comfort" && <ComfortPage />}
               {tab === "games" && <GamesHub />}
               {tab === "journey" && <JourneyPage />}
+              {tab === "sermons" && <SermonsPage />}
             </motion.div>
           )}
         </AnimatePresence>
