@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Eye, EyeOff, UserX } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 
 const AuthPage = () => {
+  const { continueAsGuest } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -161,6 +163,21 @@ const AuthPage = () => {
             {mode === "login" ? "Create an account" : "Sign in"}
           </button>
         </p>
+
+        <div className="flex items-center gap-3 mt-6">
+          <div className="flex-1 h-px bg-border" />
+          <span className="font-body text-xs text-muted-foreground">or</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <Button
+          onClick={continueAsGuest}
+          variant="ghost"
+          className="w-full mt-4 rounded-xl h-11 font-body text-sm gap-2 text-muted-foreground hover:text-foreground transition-all"
+        >
+          <UserX size={16} />
+          Continue as Guest
+        </Button>
       </motion.div>
     </div>
   );
