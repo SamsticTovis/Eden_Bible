@@ -261,7 +261,54 @@ const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles }: HomeDa
         </div>
       </motion.div>
 
-      {/* SECTION 4 — Recent Activity */}
+      {/* SECTION — Achievements */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+      >
+        <div className="flex items-center gap-2 mb-3">
+          <Trophy size={16} className="text-primary" />
+          <h3 className="font-display text-base text-foreground">Achievements</h3>
+        </div>
+        {unlocked.size === 0 ? (
+          <div className="bg-card border border-border rounded-2xl p-5 text-center shadow-soft">
+            <p className="font-body text-sm text-muted-foreground">
+              Complete activities to unlock achievements! 🏆
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {ACHIEVEMENTS.filter((a) => unlocked.has(a.key)).map((a, i) => (
+              <motion.div
+                key={a.key}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.35 + i * 0.05, type: "spring", stiffness: 300 }}
+                className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-card border border-primary/20 shadow-soft"
+              >
+                <span className="text-2xl">{a.emoji}</span>
+                <span className="font-body text-[10px] text-foreground font-medium text-center leading-tight">{a.name}</span>
+              </motion.div>
+            ))}
+          </div>
+        )}
+        {/* Locked preview */}
+        {unlocked.size > 0 && unlocked.size < ACHIEVEMENTS.length && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            {ACHIEVEMENTS.filter((a) => !unlocked.has(a.key)).map((a) => (
+              <span
+                key={a.key}
+                className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground font-body text-[10px]"
+                title={a.description}
+              >
+                🔒 {a.name}
+              </span>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
