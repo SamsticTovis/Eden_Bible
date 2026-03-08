@@ -22,6 +22,7 @@ const quickPrompts = [
 
 const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
   const { user } = useAuth();
+  const { recordActivity } = useStreak();
   const [messages, setMessages] = useState<Msg[]>([
     { role: "assistant", content: "Peace be with you 🕊️ I'm Eden, your spiritual companion. How are you feeling today?" },
   ]);
