@@ -26,6 +26,17 @@ interface ContentItem {
 
 const API_BASE = "https://bible.helloao.org/api";
 
+const TRANSLATIONS: { label: string; apiId: string }[] = [
+  { label: "BSB", apiId: "BSB" },
+  { label: "KJV", apiId: "eng-kjv" },
+  { label: "WEB", apiId: "eng-web" },
+  { label: "ASV", apiId: "eng-asv" },
+];
+
+function getApiId(label: string): string {
+  return TRANSLATIONS.find((t) => t.label === label)?.apiId || label;
+}
+
 const OT_BOOKS = new Set([
   "GEN","EXO","LEV","NUM","DEU","JOS","JDG","RUT","1SA","2SA","1KI","2KI",
   "1CH","2CH","EZR","NEH","EST","JOB","PSA","PRO","ECC","SNG","ISA","JER",
@@ -68,7 +79,7 @@ const FullBibleReader = () => {
 
   useEffect(() => {
     setBooksLoading(true);
-    fetch(`${API_BASE}/${translation}/books.json`)
+    fetch(`${API_BASE}/${getApiId(translation)}/books.json`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -94,7 +105,7 @@ const FullBibleReader = () => {
   const fetchChapter = useCallback(async (bookId: string, chap: number) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/${translation}/${bookId}/${chap}.json`);
+      const res = await fetch(`${API_BASE}/${getApiId(translation)}/${bookId}/${chap}.json`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
@@ -153,7 +164,7 @@ const FullBibleReader = () => {
   const handleTranslationChange = (newT: string) => {
     setTranslation(newT);
     localStorage.setItem("eden-version", newT);
-    if (selectedBook && view === "reader") {
+    if (view === "reader" && selectedBook) {
       fetchChapter(selectedBook.id, chapter);
     }
   };
@@ -200,15 +211,15 @@ const FullBibleReader = () => {
 
             {/* Translation selector */}
             <div className="flex items-center justify-center gap-1.5 mb-3">
-              {["BSB", "KJV", "WEB", "ASV"].map((v) => (
+              {TRANSLATIONS.map((v) => (
                 <button
-                  key={v}
-                  onClick={() => handleTranslationChange(v)}
+                  key={v.label}
+                  onClick={() => handleTranslationChange(v.label)}
                   className={`px-3 py-1.5 rounded-lg font-body text-xs font-medium transition-all ${
-                    translation === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+                    translation === v.label ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {v}
+                  {v.label}
                 </button>
               ))}
             </div>
@@ -314,8 +325,8 @@ const FullBibleReader = () => {
                 onChange={(e) => handleTranslationChange(e.target.value)}
                 className="bg-card border border-border rounded-lg px-2 py-1 font-body text-xs text-foreground"
               >
-                {["BSB", "KJV", "WEB", "ASV"].map((v) => (
-                  <option key={v} value={v}>{v}</option>
+                {TRANSLATIONS.map((v) => (
+                  <option key={v.label} value={v.label}>{v.label}</option>
                 ))}
               </select>
             </div>
