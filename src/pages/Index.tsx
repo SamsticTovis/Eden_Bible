@@ -112,6 +112,10 @@ const Index = () => {
             <motion.div key="ai-chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <AIComfortChat onClose={() => setShowAIChat(false)} />
             </motion.div>
+          ) : showProfile ? (
+            <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <ProfilePage onBack={() => setShowProfile(false)} />
+            </motion.div>
           ) : showPrayerCircles ? (
             <motion.div key="prayer-circles" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <PrayerCircles onBack={() => setShowPrayerCircles(false)} />
