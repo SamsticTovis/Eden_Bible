@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ReactMarkdown from "react-markdown";
 import { useStreak } from "@/hooks/useStreak";
+import { useActivityLogger } from "@/hooks/useActivityLogger";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
