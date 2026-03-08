@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Heart, Gamepad2, Sparkles, ChevronRight, Flame, Users, MessageCircle, Clock } from "lucide-react";
+import { BookOpen, Heart, Gamepad2, Sparkles, ChevronRight, Flame, Users, MessageCircle, Clock, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStreak } from "@/hooks/useStreak";
+import { useAchievements, ACHIEVEMENTS } from "@/hooks/useAchievements";
 import { getManna } from "./MannaTracker";
 import type { AppTab } from "./BottomNav";
 
