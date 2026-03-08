@@ -325,8 +325,8 @@ const FullBibleReader = () => {
                 onChange={(e) => handleTranslationChange(e.target.value)}
                 className="bg-card border border-border rounded-lg px-2 py-1 font-body text-xs text-foreground"
               >
-                {["BSB", "KJV", "WEB", "ASV"].map((v) => (
-                  <option key={v} value={v}>{v}</option>
+                {TRANSLATIONS.map((v) => (
+                  <option key={v.label} value={v.label}>{v.label}</option>
                 ))}
               </select>
             </div>
