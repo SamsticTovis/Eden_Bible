@@ -64,6 +64,7 @@ function extractVerseText(content: ContentItem["content"]): string {
 
 const FullBibleReader = () => {
   const { recordActivity } = useStreak();
+  const { logActivity } = useActivityLogger();
   const [translation, setTranslation] = useState(() => localStorage.getItem("eden-version") || "BSB");
   const [books, setBooks] = useState<BookInfo[]>([]);
   const [selectedBook, setSelectedBook] = useState<BookInfo | null>(null);

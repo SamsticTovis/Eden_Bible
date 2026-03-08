@@ -72,6 +72,7 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
     setInput("");
     setIsLoading(true);
     recordActivity();
+    logActivity("chat", "Chatted with Eden AI", "MessageCircle");
 
     await saveMessage(userMsg);
 

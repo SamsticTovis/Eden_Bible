@@ -74,6 +74,7 @@ const TriviaChallenge = () => {
     if (currentIndex + 1 >= questions.length) {
       setFinished(true);
       recordActivity();
+      logActivity("game", "Completed Bible Trivia", "Gamepad2");
     } else {
       setCurrentIndex((i) => i + 1);
       setSelected(null);

@@ -146,6 +146,7 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
     setNewVerse("");
     openCircle(selectedCircle);
     recordActivity();
+    logActivity("prayer", `Prayed in ${selectedCircle.name}`, "Heart");
   };
 
   const toggleAmen = async (req: PrayerRequest) => {
