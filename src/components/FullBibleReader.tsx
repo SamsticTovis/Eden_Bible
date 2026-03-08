@@ -79,7 +79,7 @@ const FullBibleReader = () => {
 
   useEffect(() => {
     setBooksLoading(true);
-    fetch(`${API_BASE}/${translation}/books.json`)
+    fetch(`${API_BASE}/${getApiId(translation)}/books.json`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
