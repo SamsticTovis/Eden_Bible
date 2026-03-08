@@ -33,6 +33,7 @@ interface PrayerRequest {
 const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
   const { user } = useAuth();
   const { recordActivity } = useStreak();
+  const { logActivity } = useActivityLogger();
   const [circles, setCircles] = useState<Circle[]>([]);
   const [selectedCircle, setSelectedCircle] = useState<Circle | null>(null);
   const [requests, setRequests] = useState<PrayerRequest[]>([]);
