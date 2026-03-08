@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Search, X, Bookmark, Copy, Share2 } from "lu
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { useStreak } from "@/hooks/useStreak";
 
 interface BookInfo {
   id: string;

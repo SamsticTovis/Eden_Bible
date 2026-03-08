@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useStreak } from "@/hooks/useStreak";
 
 interface Question {
   id: string;

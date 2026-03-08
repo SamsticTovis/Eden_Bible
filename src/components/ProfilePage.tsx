@@ -32,7 +32,7 @@ const ProfilePage = ({ onBack }: ProfilePageProps) => {
   const [loading, setLoading] = useState(true);
 
   const manna = getManna();
-  const streak = getStreak();
+  const { streak } = useStreak();
 
   useEffect(() => {
     if (!user) return;
