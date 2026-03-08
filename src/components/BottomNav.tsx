@@ -1,7 +1,7 @@
-import { Home, BookOpen, Heart, Gamepad2, Flame } from "lucide-react";
+import { Home, BookOpen, Heart, Gamepad2, Flame, Mic } from "lucide-react";
 import { motion } from "framer-motion";
 
-export type AppTab = "home" | "read" | "comfort" | "games" | "journey";
+export type AppTab = "home" | "read" | "comfort" | "games" | "journey" | "sermons";
 
 interface BottomNavProps {
   active: AppTab;
@@ -11,6 +11,7 @@ interface BottomNavProps {
 const tabs: { id: AppTab; label: string; icon: typeof Home }[] = [
   { id: "home", label: "Home", icon: Home },
   { id: "read", label: "Read", icon: BookOpen },
+  { id: "sermons", label: "Sermons", icon: Mic },
   { id: "comfort", label: "Comfort", icon: Heart },
   { id: "games", label: "Play", icon: Gamepad2 },
   { id: "journey", label: "Journey", icon: Flame },
@@ -26,7 +27,7 @@ const BottomNav = ({ active, onChange }: BottomNavProps) => {
             <button
               key={id}
               onClick={() => onChange(id)}
-              className="flex flex-col items-center gap-0.5 px-3 py-2 relative min-w-0 transition-all active:scale-95"
+              className="flex flex-col items-center gap-0.5 px-2 py-2 relative min-w-0 transition-all active:scale-95"
             >
               {isActive && (
                 <motion.div
@@ -36,12 +37,12 @@ const BottomNav = ({ active, onChange }: BottomNavProps) => {
                 />
               )}
               <Icon
-                size={20}
+                size={18}
                 strokeWidth={isActive ? 2.2 : 1.6}
                 className={`relative z-10 transition-colors duration-200 ${isActive ? "text-primary" : "text-muted-foreground"}`}
               />
               <span
-                className={`relative z-10 text-[10px] font-body font-medium transition-colors duration-200 ${
+                className={`relative z-10 text-[9px] font-body font-medium transition-colors duration-200 ${
                   isActive ? "text-primary" : "text-muted-foreground"
                 }`}
               >
