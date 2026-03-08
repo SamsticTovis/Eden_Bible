@@ -163,6 +163,21 @@ const AuthPage = () => {
             {mode === "login" ? "Create an account" : "Sign in"}
           </button>
         </p>
+
+        <div className="flex items-center gap-3 mt-6">
+          <div className="flex-1 h-px bg-border" />
+          <span className="font-body text-xs text-muted-foreground">or</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        <Button
+          onClick={continueAsGuest}
+          variant="ghost"
+          className="w-full mt-4 rounded-xl h-11 font-body text-sm gap-2 text-muted-foreground hover:text-foreground transition-all"
+        >
+          <UserX size={16} />
+          Continue as Guest
+        </Button>
       </motion.div>
     </div>
   );
