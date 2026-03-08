@@ -175,6 +175,7 @@ const Index = () => {
               {tab === "comfort" && <ComfortPage />}
               {tab === "games" && <GamesHub />}
               {tab === "journey" && <JourneyPage />}
+              {tab === "sermons" && <SermonsPage />}
             </motion.div>
           )}
         </AnimatePresence>
