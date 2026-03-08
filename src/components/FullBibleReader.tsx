@@ -211,15 +211,15 @@ const FullBibleReader = () => {
 
             {/* Translation selector */}
             <div className="flex items-center justify-center gap-1.5 mb-3">
-              {["BSB", "KJV", "WEB", "ASV"].map((v) => (
+              {TRANSLATIONS.map((v) => (
                 <button
-                  key={v}
-                  onClick={() => handleTranslationChange(v)}
+                  key={v.label}
+                  onClick={() => handleTranslationChange(v.label)}
                   className={`px-3 py-1.5 rounded-lg font-body text-xs font-medium transition-all ${
-                    translation === v ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
+                    translation === v.label ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {v}
+                  {v.label}
                 </button>
               ))}
             </div>
