@@ -48,10 +48,18 @@ const Index = () => {
 
   const handleDrawerAction = (action: string) => {
     if (action === "settings") handleOpenSettings();
-    else if (action === "prayer-circles") {
+    else if (action === "profile") {
+      if (!requireAuth("view your profile")) return;
+      setShowProfile(true);
+      setShowSettings(false);
+      setShowPrayerCircles(false);
+      setShowAIChat(false);
+      setDrawerOpen(false);
+    } else if (action === "prayer-circles") {
       if (!requireAuth("join prayer circles")) return;
       setShowPrayerCircles(true);
       setShowSettings(false);
+      setShowProfile(false);
       setShowAIChat(false);
       setDrawerOpen(false);
     } else if (action === "logout") {
