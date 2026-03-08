@@ -149,11 +149,12 @@ const FullBibleReader = () => {
     setView("chapters");
   };
 
-  const selectChapter = (chap: number) => {
+  const selectChapter = async (chap: number) => {
     setChapter(chap);
     setView("reader");
     fetchChapter(selectedBook!.id, chap);
     recordActivity();
+    await logActivity("read", `Read ${selectedBook!.commonName} ${chap}`, "BookOpen");
   };
 
   const changeChapter = (dir: number) => {
