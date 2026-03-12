@@ -135,6 +135,36 @@ export type Database = {
         }
         Relationships: []
       }
+      manna_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       prayer_circles: {
         Row: {
           created_at: string
@@ -239,6 +269,7 @@ export type Database = {
           created_at: string
           games_won: number
           id: string
+          plan: string
           reading_streak: number
           updated_at: string
           username: string | null
@@ -249,6 +280,7 @@ export type Database = {
           created_at?: string
           games_won?: number
           id: string
+          plan?: string
           reading_streak?: number
           updated_at?: string
           username?: string | null
@@ -259,6 +291,7 @@ export type Database = {
           created_at?: string
           games_won?: number
           id?: string
+          plan?: string
           reading_streak?: number
           updated_at?: string
           username?: string | null
@@ -319,6 +352,74 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_participants: {
+        Row: {
+          id: string
+          joined_at: string
+          score: number
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          score?: number
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          score?: number
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_participants_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          created_at: string
+          ends_at: string
+          entry_cost: number
+          id: string
+          name: string
+          prize_pool: number
+          starts_at: string
+          status: string
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          ends_at?: string
+          entry_cost?: number
+          id?: string
+          name: string
+          prize_pool?: number
+          starts_at?: string
+          status?: string
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          entry_cost?: number
+          id?: string
+          name?: string
+          prize_pool?: number
+          starts_at?: string
+          status?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_name: string
@@ -336,6 +437,30 @@ export type Database = {
           achievement_name?: string
           date_unlocked?: string
           id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_bans: {
+        Row: {
+          banned_by: string | null
+          created_at: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
           user_id?: string
         }
         Relationships: []
@@ -363,6 +488,24 @@ export type Database = {
           id?: string
           last_activity_date?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
@@ -405,10 +548,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -535,6 +684,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
