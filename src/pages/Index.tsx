@@ -41,6 +41,7 @@ const Index = () => {
   const [showAIChat, setShowAIChat] = useState(false);
   const [showPrayerCircles, setShowPrayerCircles] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   if (loading) {
     return (
