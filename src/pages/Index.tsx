@@ -166,6 +166,10 @@ const Index = () => {
             <motion.div key="prayer-circles" {...slideIn}>
               <PrayerCircles onBack={() => setShowPrayerCircles(false)} />
             </motion.div>
+          ) : showAdmin ? (
+            <motion.div key="admin" {...slideIn}>
+              <AdminDashboard onBack={() => setShowAdmin(false)} />
+            </motion.div>
           ) : showSettings ? (
             <motion.div key="settings" {...slideIn}>
               <button
