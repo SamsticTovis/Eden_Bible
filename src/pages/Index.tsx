@@ -15,6 +15,7 @@ import SideDrawer from "@/components/SideDrawer";
 import AuthPage from "@/components/AuthPage";
 import PrayerCircles from "@/components/PrayerCircles";
 import ProfilePage from "@/components/ProfilePage";
+import AdminDashboard from "@/components/AdminDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
