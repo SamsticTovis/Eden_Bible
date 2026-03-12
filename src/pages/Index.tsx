@@ -67,12 +67,20 @@ const Index = () => {
 
   const handleDrawerAction = (action: string) => {
     if (action === "settings") handleOpenSettings();
-    else if (action === "profile") {
+    else if (action === "admin") {
+      setShowAdmin(true);
+      setShowProfile(false);
+      setShowSettings(false);
+      setShowPrayerCircles(false);
+      setShowAIChat(false);
+      setDrawerOpen(false);
+    } else if (action === "profile") {
       if (!requireAuth("view your profile")) return;
       setShowProfile(true);
       setShowSettings(false);
       setShowPrayerCircles(false);
       setShowAIChat(false);
+      setShowAdmin(false);
       setDrawerOpen(false);
     } else if (action === "prayer-circles") {
       if (!requireAuth("join prayer circles")) return;
@@ -80,6 +88,7 @@ const Index = () => {
       setShowSettings(false);
       setShowProfile(false);
       setShowAIChat(false);
+      setShowAdmin(false);
       setDrawerOpen(false);
     } else if (action === "delete-account") {
       handleDeleteAccount();
