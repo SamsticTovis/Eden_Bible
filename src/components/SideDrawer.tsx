@@ -16,8 +16,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { User, Settings, Shield, HelpCircle, LogOut, Trash2 } from "lucide-react";
+import { User, Settings, Shield, HelpCircle, LogOut, Trash2, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdmin } from "@/hooks/useAdmin";
 
 interface SideDrawerProps {
   open: boolean;
@@ -28,6 +29,7 @@ interface SideDrawerProps {
 
 const SideDrawer = ({ open, onClose, onOpenSettings, onAction }: SideDrawerProps) => {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -35,6 +37,7 @@ const SideDrawer = ({ open, onClose, onOpenSettings, onAction }: SideDrawerProps
   const menuItems = [
     { label: "Profile", icon: User, action: "profile" },
     { label: "Prayer Circles", icon: Shield, action: "prayer-circles" },
+    ...(isAdmin ? [{ label: "Admin Dashboard", icon: ShieldAlert, action: "admin" }] : []),
     { label: "Settings", icon: Settings, action: "settings" },
     { label: "Help", icon: HelpCircle, action: "help" },
     { label: "Logout", icon: LogOut, action: "logout", destructive: true },

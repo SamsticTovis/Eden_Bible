@@ -15,6 +15,7 @@ import SideDrawer from "@/components/SideDrawer";
 import AuthPage from "@/components/AuthPage";
 import PrayerCircles from "@/components/PrayerCircles";
 import ProfilePage from "@/components/ProfilePage";
+import AdminDashboard from "@/components/AdminDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -40,6 +41,7 @@ const Index = () => {
   const [showAIChat, setShowAIChat] = useState(false);
   const [showPrayerCircles, setShowPrayerCircles] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   if (loading) {
     return (
@@ -59,17 +61,26 @@ const Index = () => {
   const handleOpenSettings = () => {
     setShowSettings(true);
     setShowPrayerCircles(false);
+    setShowAdmin(false);
     setDrawerOpen(false);
   };
 
   const handleDrawerAction = (action: string) => {
     if (action === "settings") handleOpenSettings();
-    else if (action === "profile") {
+    else if (action === "admin") {
+      setShowAdmin(true);
+      setShowProfile(false);
+      setShowSettings(false);
+      setShowPrayerCircles(false);
+      setShowAIChat(false);
+      setDrawerOpen(false);
+    } else if (action === "profile") {
       if (!requireAuth("view your profile")) return;
       setShowProfile(true);
       setShowSettings(false);
       setShowPrayerCircles(false);
       setShowAIChat(false);
+      setShowAdmin(false);
       setDrawerOpen(false);
     } else if (action === "prayer-circles") {
       if (!requireAuth("join prayer circles")) return;
@@ -77,6 +88,7 @@ const Index = () => {
       setShowSettings(false);
       setShowProfile(false);
       setShowAIChat(false);
+      setShowAdmin(false);
       setDrawerOpen(false);
     } else if (action === "delete-account") {
       handleDeleteAccount();
@@ -154,6 +166,10 @@ const Index = () => {
             <motion.div key="prayer-circles" {...slideIn}>
               <PrayerCircles onBack={() => setShowPrayerCircles(false)} />
             </motion.div>
+          ) : showAdmin ? (
+            <motion.div key="admin" {...slideIn}>
+              <AdminDashboard onBack={() => setShowAdmin(false)} />
+            </motion.div>
           ) : showSettings ? (
             <motion.div key="settings" {...slideIn}>
               <button
@@ -189,7 +205,7 @@ const Index = () => {
         </AnimatePresence>
       </main>
 
-      <BottomNav active={tab} onChange={(t) => { setShowAIChat(false); setShowSettings(false); setShowPrayerCircles(false); setShowProfile(false); setTab(t); }} />
+      <BottomNav active={tab} onChange={(t) => { setShowAIChat(false); setShowSettings(false); setShowPrayerCircles(false); setShowProfile(false); setShowAdmin(false); setTab(t); }} />
     </div>
   );
 };
