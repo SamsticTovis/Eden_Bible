@@ -61,6 +61,7 @@ const Index = () => {
   const handleOpenSettings = () => {
     setShowSettings(true);
     setShowPrayerCircles(false);
+    setShowAdmin(false);
     setDrawerOpen(false);
   };
 
