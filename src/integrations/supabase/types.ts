@@ -135,6 +135,60 @@ export type Database = {
         }
         Relationships: []
       }
+      leaderboard_entries: {
+        Row: {
+          created_at: string
+          current_rank: string
+          games_played: number
+          id: string
+          is_bot: boolean
+          last_manna_earned_at: string | null
+          last_week_rank: string | null
+          session_manna: number
+          session_started_at: string | null
+          total_manna: number
+          updated_at: string
+          user_id: string
+          username: string
+          week_start: string
+          weekly_manna: number
+        }
+        Insert: {
+          created_at?: string
+          current_rank?: string
+          games_played?: number
+          id?: string
+          is_bot?: boolean
+          last_manna_earned_at?: string | null
+          last_week_rank?: string | null
+          session_manna?: number
+          session_started_at?: string | null
+          total_manna?: number
+          updated_at?: string
+          user_id: string
+          username?: string
+          week_start?: string
+          weekly_manna?: number
+        }
+        Update: {
+          created_at?: string
+          current_rank?: string
+          games_played?: number
+          id?: string
+          is_bot?: boolean
+          last_manna_earned_at?: string | null
+          last_week_rank?: string | null
+          session_manna?: number
+          session_started_at?: string | null
+          total_manna?: number
+          updated_at?: string
+          user_id?: string
+          username?: string
+          week_start?: string
+          weekly_manna?: number
+        }
+        Relationships: []
+      }
       manna_transactions: {
         Row: {
           amount: number

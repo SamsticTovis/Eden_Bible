@@ -16,6 +16,7 @@ import AuthPage from "@/components/AuthPage";
 import PrayerCircles from "@/components/PrayerCircles";
 import ProfilePage from "@/components/ProfilePage";
 import AdminDashboard from "@/components/AdminDashboard";
+import LeaderboardPage from "@/components/LeaderboardPage";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -42,6 +43,7 @@ const Index = () => {
   const [showPrayerCircles, setShowPrayerCircles] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   if (loading) {
     return (
@@ -67,7 +69,15 @@ const Index = () => {
 
   const handleDrawerAction = (action: string) => {
     if (action === "settings") handleOpenSettings();
-    else if (action === "admin") {
+    else if (action === "leaderboard") {
+      setShowLeaderboard(true);
+      setShowProfile(false);
+      setShowSettings(false);
+      setShowPrayerCircles(false);
+      setShowAIChat(false);
+      setShowAdmin(false);
+      setDrawerOpen(false);
+    } else if (action === "admin") {
       setShowAdmin(true);
       setShowProfile(false);
       setShowSettings(false);
@@ -166,6 +176,10 @@ const Index = () => {
             <motion.div key="prayer-circles" {...slideIn}>
               <PrayerCircles onBack={() => setShowPrayerCircles(false)} />
             </motion.div>
+          ) : showLeaderboard ? (
+            <motion.div key="leaderboard" {...slideIn}>
+              <LeaderboardPage onBack={() => setShowLeaderboard(false)} />
+            </motion.div>
           ) : showAdmin ? (
             <motion.div key="admin" {...slideIn}>
               <AdminDashboard onBack={() => setShowAdmin(false)} />
@@ -193,6 +207,13 @@ const Index = () => {
                     setShowProfile(false);
                     setShowAIChat(false);
                   }}
+                  onOpenLeaderboard={() => {
+                    setShowLeaderboard(true);
+                    setShowSettings(false);
+                    setShowProfile(false);
+                    setShowAIChat(false);
+                    setShowAdmin(false);
+                  }}
                 />
               )}
               {tab === "read" && <FullBibleReader />}
@@ -205,7 +226,7 @@ const Index = () => {
         </AnimatePresence>
       </main>
 
-      <BottomNav active={tab} onChange={(t) => { setShowAIChat(false); setShowSettings(false); setShowPrayerCircles(false); setShowProfile(false); setShowAdmin(false); setTab(t); }} />
+      <BottomNav active={tab} onChange={(t) => { setShowAIChat(false); setShowSettings(false); setShowPrayerCircles(false); setShowProfile(false); setShowAdmin(false); setShowLeaderboard(false); setTab(t); }} />
     </div>
   );
 };

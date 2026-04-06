@@ -16,7 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { User, Settings, Shield, HelpCircle, LogOut, Trash2, ShieldAlert } from "lucide-react";
+import { User, Settings, Shield, HelpCircle, LogOut, Trash2, ShieldAlert, Trophy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/hooks/useAdmin";
 
@@ -36,6 +36,7 @@ const SideDrawer = ({ open, onClose, onOpenSettings, onAction }: SideDrawerProps
 
   const menuItems = [
     { label: "Profile", icon: User, action: "profile" },
+    { label: "Leaderboard", icon: Trophy, action: "leaderboard" },
     { label: "Prayer Circles", icon: Shield, action: "prayer-circles" },
     ...(isAdmin ? [{ label: "Admin Dashboard", icon: ShieldAlert, action: "admin" }] : []),
     { label: "Settings", icon: Settings, action: "settings" },

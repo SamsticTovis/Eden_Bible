@@ -13,6 +13,7 @@ interface HomeDashboardProps {
   onNavigate: (tab: AppTab) => void;
   onOpenAIChat?: () => void;
   onOpenPrayerCircles?: () => void;
+  onOpenLeaderboard?: () => void;
 }
 
 interface RecentActivity {
@@ -56,7 +57,7 @@ const timeAgo = (dateStr: string) => {
   return `${days}d ago`;
 };
 
-const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles }: HomeDashboardProps) => {
+const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles, onOpenLeaderboard }: HomeDashboardProps) => {
   const { user } = useAuth();
   const { streak } = useStreak();
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
@@ -140,7 +141,7 @@ const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles }: HomeDa
   const quickActions = [
     { label: "Read Bible", desc: "Explore God's Word", icon: BookOpen, action: () => onNavigate("read") },
     { label: "Play Games", desc: "Learn while having fun", icon: Gamepad2, action: () => onNavigate("games") },
-    { label: "Prayer Circle", desc: "Pray with others", icon: Users, action: () => onOpenPrayerCircles?.() },
+    { label: "Leaderboard", desc: "Compete & climb ranks", icon: Trophy, action: () => onOpenLeaderboard?.() },
     { label: "Ask Eden AI", desc: "Spiritual guidance", icon: MessageCircle, action: () => onOpenAIChat?.() },
   ];
 
