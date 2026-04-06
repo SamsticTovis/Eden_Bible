@@ -16,6 +16,7 @@ import AuthPage from "@/components/AuthPage";
 import PrayerCircles from "@/components/PrayerCircles";
 import ProfilePage from "@/components/ProfilePage";
 import AdminDashboard from "@/components/AdminDashboard";
+import LeaderboardPage from "@/components/LeaderboardPage";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -42,6 +43,7 @@ const Index = () => {
   const [showPrayerCircles, setShowPrayerCircles] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   if (loading) {
     return (
