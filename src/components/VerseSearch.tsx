@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Heart, BookOpen, X } from "lucide-react";
+import { Search, Heart, BookOpen, X, Sparkles, Tag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
@@ -22,11 +22,13 @@ const VerseSearch = () => {
   const [results, setResults] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
 
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
       setSearched(false);
+      setAiSuggestion(null);
       return;
     }
     const timeout = setTimeout(() => searchVerses(query.trim()), 400);
@@ -36,8 +38,8 @@ const VerseSearch = () => {
   const searchVerses = async (term: string) => {
     setLoading(true);
     setSearched(true);
+    setAiSuggestion(null);
     try {
-      // Search by text, reference, tags, and mood
       const lower = term.toLowerCase();
       const { data, error } = await supabase
         .from("verses")
@@ -46,6 +48,11 @@ const VerseSearch = () => {
 
       if (error) throw error;
       setResults(data || []);
+
+      // If no results, fetch AI suggestion
+      if (!data || data.length === 0) {
+        fetchAISuggestion(term);
+      }
     } catch {
       toast({ title: "Search failed", description: "Please try again", variant: "destructive" });
     } finally {
@@ -53,12 +60,24 @@ const VerseSearch = () => {
     }
   };
 
-  const handleTagClick = (tag: string) => {
-    setQuery(tag);
+  const fetchAISuggestion = async (term: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-comfort", {
+        body: { messages: [{ role: "user", content: `Give me 3 Bible verses about "${term}" with their references. Format: Reference - "verse text". Keep it brief.` }] },
+      });
+      if (error) return;
+      // For non-streaming fallback
+      if (typeof data === "string") {
+        setAiSuggestion(data);
+      }
+    } catch {
+      // Silently fail - AI suggestions are optional
+    }
   };
 
+  const handleTagClick = (tag: string) => setQuery(tag);
+
   const handleSave = (verse: Verse) => {
-    // For now save to localStorage since auth isn't set up yet
     const saved = JSON.parse(localStorage.getItem("soulshine-saved") || "[]");
     const exists = saved.some((v: Verse) => v.id === verse.id);
     if (exists) {
@@ -76,11 +95,29 @@ const VerseSearch = () => {
     return saved.some((v: Verse) => v.id === id);
   };
 
+  // Highlight matching keywords
+  const highlightText = (text: string, term: string) => {
+    if (!term.trim()) return text;
+    const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+    const parts = text.split(regex);
+    return parts.map((part, i) =>
+      regex.test(part) ? <mark key={i} className="bg-primary/20 text-foreground rounded px-0.5">{part}</mark> : part
+    );
+  };
+
+  // Group results by book
+  const groupedResults = results.reduce<Record<string, Verse[]>>((acc, verse) => {
+    const book = verse.book || "Other";
+    if (!acc[book]) acc[book] = [];
+    acc[book].push(verse);
+    return acc;
+  }, {});
+
   return (
     <div className="max-w-md mx-auto">
       <h2 className="font-display text-2xl text-center mb-2 text-foreground">Bible Search</h2>
       <p className="text-center text-muted-foreground font-body mb-6 text-sm">
-        Find the perfect verse for any moment 🔍
+        Find the perfect verse for any moment
       </p>
 
       {/* Search Bar */}
@@ -89,11 +126,11 @@ const VerseSearch = () => {
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search peace, strength, love..."
-          className="pl-10 pr-10 bg-card border-border font-body"
+          placeholder="Search by book, topic, or keyword..."
+          className="pl-10 pr-10 bg-card/80 backdrop-blur-sm border-border font-body rounded-xl"
         />
         {query && (
-          <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+          <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
             <X size={16} />
           </button>
         )}
@@ -101,20 +138,24 @@ const VerseSearch = () => {
 
       {/* Popular Tags */}
       {!searched && (
-        <div className="mb-6">
-          <p className="text-xs text-muted-foreground font-body mb-2">Popular topics</p>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Tag size={12} className="text-muted-foreground" />
+            <p className="text-xs text-muted-foreground font-body">Popular topics</p>
+          </div>
           <div className="flex flex-wrap gap-2">
             {popularTags.map((tag) => (
-              <button
+              <motion.button
                 key={tag}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => handleTagClick(tag)}
-                className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-body font-medium hover:bg-primary/20 transition-colors"
+                className="px-3 py-1.5 rounded-full bg-primary/8 border border-primary/15 text-primary text-xs font-body font-medium hover:bg-primary/15 transition-all"
               >
                 #{tag}
-              </button>
+              </motion.button>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Loading */}
@@ -124,51 +165,66 @@ const VerseSearch = () => {
         </div>
       )}
 
-      {/* Results */}
+      {/* Results grouped by book */}
       <AnimatePresence>
-        {results.length > 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-3">
+        {Object.keys(groupedResults).length > 0 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
             <p className="text-xs text-muted-foreground font-body">{results.length} verse{results.length !== 1 ? "s" : ""} found</p>
-            {results.map((verse, i) => (
-              <motion.div
-                key={verse.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-card border border-border rounded-xl p-4 shadow-soft"
-              >
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <BookOpen size={14} className="text-primary" />
-                    <span className="font-display text-sm text-primary">{verse.reference}</span>
-                  </div>
-                  <button onClick={() => handleSave(verse)} className="p-1">
-                    <Heart
-                      size={18}
-                      className={isSaved(verse.id) ? "text-accent fill-accent" : "text-muted-foreground"}
-                    />
-                  </button>
+            {Object.entries(groupedResults).map(([book, verses]) => (
+              <div key={book}>
+                <div className="flex items-center gap-2 mb-2">
+                  <BookOpen size={12} className="text-primary" />
+                  <span className="font-body text-[11px] text-primary font-semibold uppercase tracking-wider">{book}</span>
                 </div>
-                <p className="font-body text-foreground text-sm leading-relaxed mb-2">"{verse.text}"</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground font-body bg-muted px-2 py-0.5 rounded-full">
-                    {verse.version}
-                  </span>
-                  {verse.tags.slice(0, 3).map((tag) => (
-                    <span key={tag} className="text-[10px] text-primary/70 font-body">#{tag}</span>
+                <div className="flex flex-col gap-2">
+                  {verses.map((verse, i) => (
+                    <motion.div
+                      key={verse.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 shadow-soft"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <span className="font-display text-sm text-primary">{verse.reference}</span>
+                        <button onClick={() => handleSave(verse)} className="p-1 hover:scale-110 transition-transform">
+                          <Heart size={16} className={isSaved(verse.id) ? "text-accent fill-accent" : "text-muted-foreground"} />
+                        </button>
+                      </div>
+                      <p className="font-body text-foreground text-sm leading-relaxed mb-2">
+                        "{highlightText(verse.text, query)}"
+                      </p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] text-muted-foreground font-body bg-muted px-2 py-0.5 rounded-full">{verse.version}</span>
+                        {verse.tags.slice(0, 3).map((tag) => (
+                          <span key={tag} className="text-[10px] text-primary/70 font-body cursor-pointer hover:text-primary" onClick={() => setQuery(tag)}>#{tag}</span>
+                        ))}
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* No results */}
+      {/* AI Suggestion fallback */}
       {searched && !loading && results.length === 0 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-8">
-          <p className="text-4xl mb-2">📖</p>
-          <p className="text-muted-foreground font-body text-sm">No verses found. Try a different keyword!</p>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-6">
+          <p className="text-4xl mb-3">📖</p>
+          <p className="text-muted-foreground font-body text-sm mb-4">No verses found in the database.</p>
+          {aiSuggestion ? (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="bg-card/80 backdrop-blur-sm border border-primary/20 rounded-xl p-4 text-left">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles size={14} className="text-primary" />
+                <span className="font-body text-[11px] text-primary font-semibold uppercase tracking-wider">AI Suggestions</span>
+              </div>
+              <p className="font-body text-sm text-foreground/80 leading-relaxed whitespace-pre-line">{aiSuggestion}</p>
+            </motion.div>
+          ) : (
+            <p className="text-muted-foreground/60 font-body text-xs">Try a different keyword!</p>
+          )}
         </motion.div>
       )}
     </div>
