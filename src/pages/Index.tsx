@@ -218,7 +218,7 @@ const Index = () => {
         </AnimatePresence>
       </main>
 
-      <BottomNav active={tab} onChange={(t) => { setShowAIChat(false); setShowSettings(false); setShowPrayerCircles(false); setShowProfile(false); setShowAdmin(false); setTab(t); }} />
+      <BottomNav active={tab} onChange={(t) => { setShowAIChat(false); setShowSettings(false); setShowPrayerCircles(false); setShowProfile(false); setShowAdmin(false); setShowLeaderboard(false); setTab(t); }} />
     </div>
   );
 };
