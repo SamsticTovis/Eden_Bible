@@ -69,7 +69,15 @@ const Index = () => {
 
   const handleDrawerAction = (action: string) => {
     if (action === "settings") handleOpenSettings();
-    else if (action === "admin") {
+    else if (action === "leaderboard") {
+      setShowLeaderboard(true);
+      setShowProfile(false);
+      setShowSettings(false);
+      setShowPrayerCircles(false);
+      setShowAIChat(false);
+      setShowAdmin(false);
+      setDrawerOpen(false);
+    } else if (action === "admin") {
       setShowAdmin(true);
       setShowProfile(false);
       setShowSettings(false);
