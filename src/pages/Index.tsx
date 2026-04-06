@@ -168,6 +168,10 @@ const Index = () => {
             <motion.div key="prayer-circles" {...slideIn}>
               <PrayerCircles onBack={() => setShowPrayerCircles(false)} />
             </motion.div>
+          ) : showLeaderboard ? (
+            <motion.div key="leaderboard" {...slideIn}>
+              <LeaderboardPage onBack={() => setShowLeaderboard(false)} />
+            </motion.div>
           ) : showAdmin ? (
             <motion.div key="admin" {...slideIn}>
               <AdminDashboard onBack={() => setShowAdmin(false)} />
@@ -194,6 +198,13 @@ const Index = () => {
                     setShowSettings(false);
                     setShowProfile(false);
                     setShowAIChat(false);
+                  }}
+                  onOpenLeaderboard={() => {
+                    setShowLeaderboard(true);
+                    setShowSettings(false);
+                    setShowProfile(false);
+                    setShowAIChat(false);
+                    setShowAdmin(false);
                   }}
                 />
               )}
