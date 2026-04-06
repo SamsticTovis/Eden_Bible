@@ -57,7 +57,7 @@ const timeAgo = (dateStr: string) => {
   return `${days}d ago`;
 };
 
-const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles }: HomeDashboardProps) => {
+const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles, onOpenLeaderboard }: HomeDashboardProps) => {
   const { user } = useAuth();
   const { streak } = useStreak();
   const [greeting] = useState(() => greetings[Math.floor(Math.random() * greetings.length)]);
