@@ -146,7 +146,6 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
     setNewRequest("");
     setNewVerse("");
     openCircle(selectedCircle);
-    recordActivity();
     logActivity("prayer", `Prayed in ${selectedCircle.name}`, "Heart");
   };
 
