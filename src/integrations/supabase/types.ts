@@ -67,6 +67,45 @@ export type Database = {
           },
         ]
       }
+      daily_tasks: {
+        Row: {
+          ai_chat_used: boolean
+          bible_read: boolean
+          created_at: string
+          id: string
+          manna_awarded: number
+          prayer_done: boolean
+          quiz_completed: boolean
+          task_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_chat_used?: boolean
+          bible_read?: boolean
+          created_at?: string
+          id?: string
+          manna_awarded?: number
+          prayer_done?: boolean
+          quiz_completed?: boolean
+          task_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_chat_used?: boolean
+          bible_read?: boolean
+          created_at?: string
+          id?: string
+          manna_awarded?: number
+          prayer_done?: boolean
+          quiz_completed?: boolean
+          task_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
