@@ -3,9 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { addManna } from "@/components/MannaTracker";
+import { useManna } from "@/hooks/useManna";
+import { useActivityLogger } from "@/hooks/useActivityLogger";
 
 const MemoryVerseGame = () => {
+  const { earnManna } = useManna();
+  const { logActivity } = useActivityLogger();
   const [verses, setVerses] = useState<{ reference: string; text: string }[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hiddenWords, setHiddenWords] = useState<Set<number>>(new Set());
@@ -64,7 +67,9 @@ const MemoryVerseGame = () => {
       const allSolved = [...hiddenWords].every((i) => solvedBlanks.has(i) || i === activeBlank);
       if (allSolved) {
         if (currentIndex + 1 >= verses.length) {
-          addManna(score + 1);
+          const mannaAmount = score + 1;
+          earnManna(mannaAmount, `Memory Verse completed (+${mannaAmount})`);
+          logActivity("game_played", "Completed Memory Verse Game", "Gamepad2");
           setFinished(true);
         } else {
           setTimeout(() => {

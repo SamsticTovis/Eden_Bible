@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { RotateCcw, Sparkles, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { addManna } from "@/components/MannaTracker";
+import { useManna } from "@/hooks/useManna";
+import { useActivityLogger } from "@/hooks/useActivityLogger";
 
 const GRID_SIZE = 8;
 const BIBLE_WORDS = [
@@ -59,6 +60,8 @@ const generateGrid = (): { grid: string[][]; placed: PlacedWord[] } => {
 };
 
 const BibleWordSearch = () => {
+  const { earnManna } = useManna();
+  const { logActivity } = useActivityLogger();
   const [grid, setGrid] = useState<string[][]>([]);
   const [placedWords, setPlacedWords] = useState<PlacedWord[]>([]);
   const [foundWords, setFoundWords] = useState<Set<string>>(new Set());
@@ -96,7 +99,9 @@ const BibleWordSearch = () => {
       setFoundWords(newFound);
       setSelectedCells([]);
       if (newFound.size === placedWords.length) {
-        addManna(placedWords.length * 2);
+        const mannaAmount = placedWords.length * 2;
+        earnManna(mannaAmount, `Word Search completed (+${mannaAmount})`);
+        logActivity("game_played", "Completed Bible Word Search", "Gamepad2");
         setFinished(true);
       }
     } else if (selectedStr.length >= 7) {

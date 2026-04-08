@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles, Users, Bot, BookOpen, Brain, Zap, Shuffle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { addManna } from "@/components/MannaTracker";
+import { useManna } from "@/hooks/useManna";
+import { useActivityLogger } from "@/hooks/useActivityLogger";
 import { toast } from "@/hooks/use-toast";
 
 interface Question {
@@ -43,6 +44,8 @@ interface MultiplayerTriviaProps {
 }
 
 const MultiplayerTrivia = ({ gameType, gameLabel, dbGameType }: MultiplayerTriviaProps) => {
+  const { earnManna } = useManna();
+  const { logActivity } = useActivityLogger();
   const [phase, setPhase] = useState<"lobby" | "loading" | "waiting" | "playing" | "results">("lobby");
   const [matchDifficulty, setMatchDifficulty] = useState("medium");
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -116,8 +119,11 @@ const MultiplayerTrivia = ({ gameType, gameLabel, dbGameType }: MultiplayerTrivi
 
   const handleNext = () => {
     if (currentIndex + 1 >= questions.length) {
-      const manna = (myPlayer?.score || 0) * 2;
-      if (manna > 0) addManna(manna);
+      const mannaAmount = (myPlayer?.score || 0) * 2;
+      if (mannaAmount > 0) {
+        earnManna(mannaAmount, `Multiplayer Trivia (+${mannaAmount})`);
+        logActivity("game_played", "Completed Multiplayer Trivia", "Gamepad2");
+      }
       setPhase("results");
     } else {
       setCurrentIndex((i) => i + 1);

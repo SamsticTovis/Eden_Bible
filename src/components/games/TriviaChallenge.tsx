@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles, Zap, Brain, GraduationCap, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useStreak } from "@/hooks/useStreak";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
 import { useAchievements } from "@/hooks/useAchievements";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +33,6 @@ const encouragements = {
 };
 
 const TriviaChallenge = () => {
-  const { recordActivity } = useStreak();
   const { logActivity } = useActivityLogger();
   const { tryUnlock } = useAchievements();
   const [phase, setPhase] = useState<"select" | "loading" | "playing" | "finished">("select");
@@ -96,7 +94,6 @@ const TriviaChallenge = () => {
   const handleNext = () => {
     if (currentIndex + 1 >= questions.length) {
       setPhase("finished");
-      recordActivity();
       logActivity("game_played", "Completed Bible Trivia", "Gamepad2");
       tryUnlock("first_game_won");
     } else {

@@ -4,27 +4,21 @@ import { BookOpen, Gamepad2, Users, MessageCircle, CheckCircle2, Circle, Target,
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useManna } from "@/hooks/useManna";
 
 interface Goal {
   key: string;
   label: string;
   icon: React.ElementType;
-  check: (data: GoalData) => boolean;
+  taskField: string;
   manna: number;
 }
 
-interface GoalData {
-  chaptersToday: boolean;
-  gamesToday: boolean;
-  circleToday: boolean;
-  chatToday: boolean;
-}
-
 const GOALS: Goal[] = [
-  { key: "read", label: "Read a Bible chapter", icon: BookOpen, check: (d) => d.chaptersToday, manna: 10 },
-  { key: "game", label: "Complete a quiz", icon: Gamepad2, check: (d) => d.gamesToday, manna: 15 },
-  { key: "pray", label: "Join a prayer", icon: Users, check: (d) => d.circleToday, manna: 10 },
-  { key: "chat", label: "Chat with Eden AI", icon: MessageCircle, check: (d) => d.chatToday, manna: 5 },
+  { key: "read", label: "Read a Bible chapter", icon: BookOpen, taskField: "bible_read", manna: 10 },
+  { key: "game", label: "Complete a quiz", icon: Gamepad2, taskField: "quiz_completed", manna: 15 },
+  { key: "pray", label: "Join a prayer", icon: Users, taskField: "prayer_done", manna: 10 },
+  { key: "chat", label: "Chat with Eden AI", icon: MessageCircle, taskField: "ai_chat_used", manna: 5 },
 ];
 
 const encouragements = [
@@ -39,11 +33,12 @@ const encouragements = [
 
 const SpiritualGoals = () => {
   const { user } = useAuth();
-  const [goalData, setGoalData] = useState<GoalData>({
-    chaptersToday: false,
-    gamesToday: false,
-    circleToday: false,
-    chatToday: false,
+  const { mannaToday } = useManna();
+  const [taskData, setTaskData] = useState<Record<string, boolean>>({
+    bible_read: false,
+    quiz_completed: false,
+    prayer_done: false,
+    ai_chat_used: false,
   });
 
   const encouragement = useMemo(
@@ -51,43 +46,57 @@ const SpiritualGoals = () => {
     []
   );
 
+  const today = useMemo(() => new Date().toISOString().split("T")[0], []);
+
   useEffect(() => {
     if (!user) return;
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayISO = todayStart.toISOString();
 
     const load = async () => {
-      const { data: activities } = await supabase
-        .from("recent_activity")
-        .select("activity_type")
+      const { data } = await supabase
+        .from("daily_tasks")
+        .select("bible_read, quiz_completed, prayer_done, ai_chat_used")
         .eq("user_id", user.id)
-        .gte("created_at", todayISO);
+        .eq("task_date", today)
+        .maybeSingle();
 
-      if (activities) {
-        const types = new Set(activities.map((a) => a.activity_type));
-        setGoalData({
-          chaptersToday: types.has("bible_read"),
-          gamesToday: types.has("game_played") || types.has("game_won"),
-          circleToday: types.has("circle_joined"),
-          chatToday: types.has("chat"),
+      if (data) {
+        setTaskData({
+          bible_read: data.bible_read,
+          quiz_completed: data.quiz_completed,
+          prayer_done: data.prayer_done,
+          ai_chat_used: data.ai_chat_used,
         });
       }
     };
 
     load();
 
+    // Real-time subscription on daily_tasks
     const channel = supabase
-      .channel("goals-activity")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "recent_activity", filter: `user_id=eq.${user.id}` }, () => load())
+      .channel("goals-daily-tasks")
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "daily_tasks",
+        filter: `user_id=eq.${user.id}`,
+      }, (payload) => {
+        const row = payload.new as any;
+        if (row?.task_date === today) {
+          setTaskData({
+            bible_read: row.bible_read,
+            quiz_completed: row.quiz_completed,
+            prayer_done: row.prayer_done,
+            ai_chat_used: row.ai_chat_used,
+          });
+        }
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  }, [user, today]);
 
-  const completed = GOALS.filter((g) => g.check(goalData)).length;
+  const completed = GOALS.filter((g) => taskData[g.taskField]).length;
   const progress = Math.round((completed / GOALS.length) * 100);
-  const mannaEarned = GOALS.filter((g) => g.check(goalData)).reduce((sum, g) => sum + g.manna, 0);
 
   return (
     <div className="space-y-4">
@@ -106,12 +115,12 @@ const SpiritualGoals = () => {
           </div>
           <div className="flex items-center gap-1.5">
             <Coins size={12} className="text-primary" />
-            <span className="font-body text-[11px] text-primary font-semibold">+{mannaEarned} today</span>
+            <span className="font-body text-[11px] text-primary font-semibold">+{mannaToday} today</span>
           </div>
         </div>
         <div className="p-4 space-y-2">
           {GOALS.map((goal, i) => {
-            const done = goal.check(goalData);
+            const done = taskData[goal.taskField];
             return (
               <motion.div
                 key={goal.key}

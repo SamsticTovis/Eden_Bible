@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { useStreak } from "@/hooks/useStreak";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
 import { useAchievements } from "@/hooks/useAchievements";
 
@@ -33,7 +32,6 @@ interface PrayerRequest {
 
 const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
   const { user } = useAuth();
-  const { recordActivity } = useStreak();
   const { logActivity } = useActivityLogger();
   const { tryUnlock } = useAchievements();
   const [circles, setCircles] = useState<Circle[]>([]);
@@ -148,7 +146,6 @@ const PrayerCircles = ({ onBack }: { onBack: () => void }) => {
     setNewRequest("");
     setNewVerse("");
     openCircle(selectedCircle);
-    recordActivity();
     logActivity("prayer", `Prayed in ${selectedCircle.name}`, "Heart");
   };
 

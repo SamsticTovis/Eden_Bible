@@ -1,20 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Sparkles } from "lucide-react";
 import { useStreak } from "@/hooks/useStreak";
-
-const MANNA_KEY = "eden-manna";
-
-export const getManna = (): number => {
-  return parseInt(localStorage.getItem(MANNA_KEY) || "0", 10);
-};
-
-export const addManna = (points: number) => {
-  const current = getManna();
-  localStorage.setItem(MANNA_KEY, String(current + points));
-};
+import { useManna } from "@/hooks/useManna";
 
 const MannaTracker = () => {
-  const manna = getManna();
+  const { manna } = useManna();
   const { streak, justIncremented } = useStreak();
 
   return (
