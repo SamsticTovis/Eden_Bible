@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { getManna } from "@/components/MannaTracker";
+import { useManna } from "@/hooks/useManna";
 import { useStreak } from "@/hooks/useStreak";
 
 interface ProfilePageProps {
@@ -31,7 +31,7 @@ const ProfilePage = ({ onBack }: ProfilePageProps) => {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const manna = getManna();
+  const { manna } = useManna();
   const { streak } = useStreak();
 
   useEffect(() => {

@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight, Search, X, Bookmark, Copy, Share2 } from "lu
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { useStreak } from "@/hooks/useStreak";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
 import { useAchievements } from "@/hooks/useAchievements";
 
@@ -64,7 +63,6 @@ function extractVerseText(content: ContentItem["content"]): string {
 }
 
 const FullBibleReader = () => {
-  const { recordActivity } = useStreak();
   const { logActivity } = useActivityLogger();
   const { tryUnlock } = useAchievements();
   const [translation, setTranslation] = useState(() => localStorage.getItem("eden-version") || "BSB");
@@ -157,8 +155,7 @@ const FullBibleReader = () => {
     setChapter(chap);
     setView("reader");
     fetchChapter(selectedBook!.id, chap);
-    recordActivity();
-    await logActivity("read", `Read ${selectedBook!.commonName} ${chap}`, "BookOpen");
+    await logActivity("bible_read", `Read ${selectedBook!.commonName} ${chap}`, "BookOpen");
     tryUnlock("first_chapter");
   };
 

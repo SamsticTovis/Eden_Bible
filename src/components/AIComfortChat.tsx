@@ -7,7 +7,6 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import ReactMarkdown from "react-markdown";
-import { useStreak } from "@/hooks/useStreak";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -81,7 +80,6 @@ const EdenAvatar = ({ mood, isTyping }: { mood: EdenMood; isTyping: boolean }) =
 
 const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
   const { user } = useAuth();
-  const { recordActivity } = useStreak();
   const { logActivity } = useActivityLogger();
   const [messages, setMessages] = useState<Msg[]>([
     { role: "assistant", content: "Peace be with you 🕊️ I'm Eden, your spiritual companion. How are you feeling today?" },
@@ -127,7 +125,6 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
     setMessages(allMessages);
     setInput("");
     setIsLoading(true);
-    recordActivity();
     logActivity("chat", "Chatted with Eden AI", "MessageCircle");
     await saveMessage(userMsg);
 

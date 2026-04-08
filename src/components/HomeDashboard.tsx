@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStreak } from "@/hooks/useStreak";
 import { useAchievements, ACHIEVEMENTS } from "@/hooks/useAchievements";
-import { getManna } from "./MannaTracker";
+import { useManna } from "@/hooks/useManna";
 import type { AppTab } from "./BottomNav";
 
 interface HomeDashboardProps {
@@ -64,7 +64,7 @@ const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles, onOpenLe
   const [devotional, setDevotional] = useState<Devotional | null>(null);
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [stats, setStats] = useState({ gamesPlayed: 0, circlesJoined: 0 });
-  const manna = getManna();
+  const { manna } = useManna();
   const { unlocked, checkAchievements } = useAchievements();
 
   // Fetch daily devotional from Bible API
