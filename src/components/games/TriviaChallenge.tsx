@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles, Zap, Brain, G
 import { Button } from "@/components/ui/button";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
 import { useAchievements } from "@/hooks/useAchievements";
+import { useManna } from "@/hooks/useManna";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 
@@ -35,6 +36,8 @@ const encouragements = {
 const TriviaChallenge = () => {
   const { logActivity } = useActivityLogger();
   const { tryUnlock } = useAchievements();
+  const { incrementGamesPlayed } = useManna();
+  const gameFinishedRef = useRef(false);
   const [phase, setPhase] = useState<"select" | "loading" | "playing" | "finished">("select");
   const [difficulty, setDifficulty] = useState<string>("easy");
   const [questions, setQuestions] = useState<Question[]>([]);
