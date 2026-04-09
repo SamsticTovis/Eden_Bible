@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, ChevronRight, RotateCcw, Sparkles, Zap, Brain, GraduationCap, BookOpen } from "lucide-react";
@@ -97,8 +97,12 @@ const TriviaChallenge = () => {
   const handleNext = () => {
     if (currentIndex + 1 >= questions.length) {
       setPhase("finished");
-      logActivity("game_played", "Completed Bible Trivia", "Gamepad2");
-      tryUnlock("first_game_won");
+      if (!gameFinishedRef.current) {
+        gameFinishedRef.current = true;
+        logActivity("game_played", "Completed Bible Trivia", "Gamepad2");
+        incrementGamesPlayed();
+        tryUnlock("first_game_won");
+      }
     } else {
       setCurrentIndex((i) => i + 1);
       setSelected(null);
@@ -111,6 +115,7 @@ const TriviaChallenge = () => {
     setCurrentIndex(0);
     setSelected(null);
     setScore(0);
+    gameFinishedRef.current = false;
   };
 
   // DIFFICULTY SELECT
