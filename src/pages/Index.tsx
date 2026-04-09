@@ -17,7 +17,9 @@ import PrayerCircles from "@/components/PrayerCircles";
 import ProfilePage from "@/components/ProfilePage";
 import AdminDashboard from "@/components/AdminDashboard";
 import LeaderboardPage from "@/components/LeaderboardPage";
+import Paywall from "@/components/Paywall";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserPlan } from "@/hooks/useUserPlan";
 import { motion, AnimatePresence } from "framer-motion";
 
 const slideIn = {
@@ -36,6 +38,7 @@ const tabSwitch = {
 
 const Index = () => {
   const { user, loading, signOut, isGuest, requireAuth } = useAuth();
+  const { hasAccess, isPro, isAdmin, loading: planLoading } = useUserPlan();
   const [tab, setTab] = useState<AppTab>("home");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -45,7 +48,7 @@ const Index = () => {
   const [showAdmin, setShowAdmin] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
-  if (loading) {
+  if (loading || (user && planLoading)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -58,6 +61,11 @@ const Index = () => {
 
   if (!user && !isGuest) {
     return <AuthPage />;
+  }
+
+  // Show paywall for authenticated free users (not admin, not guest)
+  if (user && !isGuest && !hasAccess) {
+    return <Paywall />;
   }
 
   const handleOpenSettings = () => {
@@ -117,9 +125,6 @@ const Index = () => {
       if (data?.error) throw new Error(data.error);
       await supabase.auth.signOut();
       localStorage.removeItem("eden-guest-session");
-      localStorage.removeItem("eden-manna");
-      localStorage.removeItem("eden-streak");
-      localStorage.removeItem("eden-last-login");
     } catch (e: any) {
       const { toast } = await import("@/hooks/use-toast");
       toast({ title: "Error", description: e.message || "Failed to delete account." });
@@ -141,6 +146,16 @@ const Index = () => {
             {isGuest && (
               <span className="px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-body text-[10px] font-medium uppercase tracking-wider">
                 Guest
+              </span>
+            )}
+            {isPro && !isAdmin && (
+              <span className="px-2 py-0.5 rounded-md bg-primary/15 text-primary font-body text-[10px] font-semibold uppercase tracking-wider">
+                PRO
+              </span>
+            )}
+            {isAdmin && (
+              <span className="px-2 py-0.5 rounded-md bg-accent/15 text-accent font-body text-[10px] font-semibold uppercase tracking-wider">
+                ADMIN
               </span>
             )}
           </div>
