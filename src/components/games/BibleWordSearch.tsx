@@ -60,7 +60,7 @@ const generateGrid = (): { grid: string[][]; placed: PlacedWord[] } => {
 };
 
 const BibleWordSearch = () => {
-  const { earnManna } = useManna();
+  const { earnManna, incrementGamesPlayed } = useManna();
   const { logActivity } = useActivityLogger();
   const [grid, setGrid] = useState<string[][]>([]);
   const [placedWords, setPlacedWords] = useState<PlacedWord[]>([]);
@@ -102,6 +102,7 @@ const BibleWordSearch = () => {
         const mannaAmount = placedWords.length * 2;
         earnManna(mannaAmount, `Word Search completed (+${mannaAmount})`);
         logActivity("game_played", "Completed Bible Word Search", "Gamepad2");
+        incrementGamesPlayed();
         setFinished(true);
       }
     } else if (selectedStr.length >= 7) {

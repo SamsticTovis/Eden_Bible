@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useManna } from "@/hooks/useManna";
@@ -31,10 +31,17 @@ const STREAK_REWARDS: Record<number, number> = {
 export const useActivityLogger = () => {
   const { user } = useAuth();
   const { earnManna } = useManna();
+  // Prevent duplicate calls within the same second
+  const lastLogRef = useRef<string>("");
 
   const logActivity = useCallback(
     async (type: string, description: string, icon: ActivityIcon = "BookOpen") => {
       if (!user) return;
+
+      // Dedup guard: prevent exact same activity within 2 seconds
+      const dedupKey = `${user.id}-${type}-${Math.floor(Date.now() / 2000)}`;
+      if (lastLogRef.current === dedupKey) return;
+      lastLogRef.current = dedupKey;
 
       // 1. Insert into recent_activity
       await supabase.from("recent_activity").insert({
@@ -49,7 +56,6 @@ export const useActivityLogger = () => {
       if (taskField) {
         const today = new Date().toISOString().split("T")[0];
 
-        // Check existing daily task record
         const { data: existing } = await supabase
           .from("daily_tasks")
           .select("*")
@@ -58,7 +64,6 @@ export const useActivityLogger = () => {
           .maybeSingle();
 
         if (!existing) {
-          // Create new daily task record with this task marked true
           const taskRow: any = {
             user_id: user.id,
             task_date: today,
@@ -67,7 +72,6 @@ export const useActivityLogger = () => {
           };
           await supabase.from("daily_tasks").insert(taskRow);
 
-          // Award task manna
           if (TASK_MANNA[taskField]) {
             await earnManna(TASK_MANNA[taskField], `Daily goal: ${description}`);
           }
@@ -75,7 +79,6 @@ export const useActivityLogger = () => {
           // First task of the day — update streak
           await updateStreak(user.id);
         } else if (!(existing as any)[taskField]) {
-          // Task not yet completed today — mark it
           await supabase
             .from("daily_tasks")
             .update({
@@ -85,7 +88,6 @@ export const useActivityLogger = () => {
             })
             .eq("id", existing.id);
 
-          // Award task manna
           if (TASK_MANNA[taskField]) {
             await earnManna(TASK_MANNA[taskField], `Daily goal: ${description}`);
           }
@@ -117,7 +119,7 @@ async function updateStreak(userId: string) {
     return;
   }
 
-  if (progress.last_activity_date === today) return; // Already counted today
+  if (progress.last_activity_date === today) return;
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
@@ -139,7 +141,6 @@ async function updateStreak(userId: string) {
   // Streak milestone rewards
   if (STREAK_REWARDS[newStreak]) {
     const bonus = STREAK_REWARDS[newStreak];
-    // Insert manna transaction directly (can't use hook here)
     await supabase.from("manna_transactions").insert({
       user_id: userId,
       amount: bonus,
@@ -147,7 +148,6 @@ async function updateStreak(userId: string) {
       description: `${newStreak}-day streak bonus!`,
     });
 
-    // Update leaderboard
     const { data: entry } = await supabase
       .from("leaderboard_entries")
       .select("id, total_manna, weekly_manna")

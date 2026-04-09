@@ -10,9 +10,14 @@ export const useManna = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchManna = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setManna(0);
+      setWeeklyManna(0);
+      setMannaToday(0);
+      setLoading(false);
+      return;
+    }
 
-    // Fetch from leaderboard_entries
     const { data: entry } = await supabase
       .from("leaderboard_entries")
       .select("total_manna, weekly_manna")
@@ -23,9 +28,11 @@ export const useManna = () => {
     if (entry) {
       setManna(entry.total_manna);
       setWeeklyManna(entry.weekly_manna);
+    } else {
+      setManna(0);
+      setWeeklyManna(0);
     }
 
-    // Fetch today's manna from transactions
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const { data: txns } = await supabase
@@ -36,21 +43,28 @@ export const useManna = () => {
 
     if (txns) {
       setMannaToday(txns.reduce((sum, t) => sum + t.amount, 0));
+    } else {
+      setMannaToday(0);
     }
 
     setLoading(false);
   }, [user]);
 
+  // Reset on user change
   useEffect(() => {
+    setManna(0);
+    setWeeklyManna(0);
+    setMannaToday(0);
+    setLoading(true);
     fetchManna();
   }, [fetchManna]);
 
-  // Real-time subscription
+  // Real-time subscription scoped to user
   useEffect(() => {
     if (!user) return;
 
     const channel = supabase
-      .channel("manna-sync")
+      .channel(`manna-sync-${user.id}`)
       .on(
         "postgres_changes",
         {
@@ -83,7 +97,6 @@ export const useManna = () => {
       setWeeklyManna((prev) => prev + amount);
       setMannaToday((prev) => prev + amount);
 
-      // Get username from profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("username")
@@ -92,7 +105,6 @@ export const useManna = () => {
 
       const username = profile?.username || user.email?.split("@")[0] || "Player";
 
-      // Upsert leaderboard entry
       const { data: existing } = await supabase
         .from("leaderboard_entries")
         .select("id, total_manna, weekly_manna, games_played")
@@ -121,7 +133,6 @@ export const useManna = () => {
         });
       }
 
-      // Record transaction
       await supabase.from("manna_transactions").insert({
         user_id: user.id,
         amount,
@@ -132,5 +143,41 @@ export const useManna = () => {
     [user]
   );
 
-  return { manna, weeklyManna, mannaToday, earnManna, loading, refresh: fetchManna };
+  const incrementGamesPlayed = useCallback(async () => {
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const username = profile?.username || user.email?.split("@")[0] || "Player";
+
+    const { data: existing } = await supabase
+      .from("leaderboard_entries")
+      .select("id, games_played")
+      .eq("user_id", user.id)
+      .eq("is_bot", false)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from("leaderboard_entries")
+        .update({
+          games_played: existing.games_played + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existing.id);
+    } else {
+      await supabase.from("leaderboard_entries").insert({
+        user_id: user.id,
+        username,
+        games_played: 1,
+        is_bot: false,
+      });
+    }
+  }, [user]);
+
+  return { manna, weeklyManna, mannaToday, earnManna, incrementGamesPlayed, loading, refresh: fetchManna };
 };

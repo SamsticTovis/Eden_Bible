@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { useManna } from "@/hooks/useManna";
 import { useStreak } from "@/hooks/useStreak";
+import { useUserPlan } from "@/hooks/useUserPlan";
 
 interface ProfilePageProps {
   onBack: () => void;
@@ -33,6 +34,7 @@ const ProfilePage = ({ onBack }: ProfilePageProps) => {
 
   const { manna } = useManna();
   const { streak } = useStreak();
+  const { isPro, isAdmin } = useUserPlan();
 
   useEffect(() => {
     if (!user) return;
@@ -176,6 +178,16 @@ const ProfilePage = ({ onBack }: ProfilePageProps) => {
         ) : (
           <div className="flex items-center gap-2 mt-3">
             <h3 className="font-display text-lg text-foreground">{displayName}</h3>
+            {isPro && !isAdmin && (
+              <span className="px-2 py-0.5 rounded-md bg-primary/15 text-primary font-body text-[10px] font-semibold uppercase tracking-wider shadow-[0_0_8px_hsl(var(--primary)/0.3)]">
+                PRO
+              </span>
+            )}
+            {isAdmin && (
+              <span className="px-2 py-0.5 rounded-md bg-accent/15 text-accent font-body text-[10px] font-semibold uppercase tracking-wider">
+                ADMIN
+              </span>
+            )}
             <button
               onClick={() => { setEditName(displayName); setEditing(true); }}
               className="text-muted-foreground hover:text-primary transition-colors"

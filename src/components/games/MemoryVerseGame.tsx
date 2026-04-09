@@ -7,7 +7,7 @@ import { useManna } from "@/hooks/useManna";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
 
 const MemoryVerseGame = () => {
-  const { earnManna } = useManna();
+  const { earnManna, incrementGamesPlayed } = useManna();
   const { logActivity } = useActivityLogger();
   const [verses, setVerses] = useState<{ reference: string; text: string }[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -70,7 +70,7 @@ const MemoryVerseGame = () => {
           const mannaAmount = score + 1;
           earnManna(mannaAmount, `Memory Verse completed (+${mannaAmount})`);
           logActivity("game_played", "Completed Memory Verse Game", "Gamepad2");
-          setFinished(true);
+          incrementGamesPlayed();
         } else {
           setTimeout(() => {
             const next = currentIndex + 1;
