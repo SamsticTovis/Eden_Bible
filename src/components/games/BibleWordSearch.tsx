@@ -60,7 +60,7 @@ const generateGrid = (): { grid: string[][]; placed: PlacedWord[] } => {
 };
 
 const BibleWordSearch = () => {
-  const { earnManna } = useManna();
+  const { earnManna, incrementGamesPlayed } = useManna();
   const { logActivity } = useActivityLogger();
   const [grid, setGrid] = useState<string[][]>([]);
   const [placedWords, setPlacedWords] = useState<PlacedWord[]>([]);
