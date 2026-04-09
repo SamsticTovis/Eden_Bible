@@ -44,7 +44,7 @@ interface MultiplayerTriviaProps {
 }
 
 const MultiplayerTrivia = ({ gameType, gameLabel, dbGameType }: MultiplayerTriviaProps) => {
-  const { earnManna } = useManna();
+  const { earnManna, incrementGamesPlayed } = useManna();
   const { logActivity } = useActivityLogger();
   const [phase, setPhase] = useState<"lobby" | "loading" | "waiting" | "playing" | "results">("lobby");
   const [matchDifficulty, setMatchDifficulty] = useState("medium");
@@ -123,6 +123,7 @@ const MultiplayerTrivia = ({ gameType, gameLabel, dbGameType }: MultiplayerTrivi
       if (mannaAmount > 0) {
         earnManna(mannaAmount, `Multiplayer Trivia (+${mannaAmount})`);
         logActivity("game_played", "Completed Multiplayer Trivia", "Gamepad2");
+        incrementGamesPlayed();
       }
       setPhase("results");
     } else {
