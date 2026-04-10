@@ -43,15 +43,13 @@ const Paywall = () => {
       return;
     }
 
-    setLoading(true);
-
-    const handler = new window.PaystackPop();
-    handler.newTransaction({
+    const handler = window.PaystackPop.setup({
       key: PAYSTACK_PUBLIC_KEY,
       email: user.email,
       amount: 299900,
       currency: "NGN",
-      callback: async (response) => {
+      callback: async (response: { reference: string }) => {
+        setLoading(true);
         try {
           const { data, error } = await supabase.functions.invoke("verify-payment", {
             body: { reference: response.reference },
@@ -72,6 +70,7 @@ const Paywall = () => {
         setLoading(false);
       },
     });
+    handler.openIframe();
   };
 
   return (
