@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, BookOpen, Brain, Gamepad2, Flame, Sparkles, LogOut, Crown } from "lucide-react";
+import { BookOpen, Brain, Gamepad2, Flame, Sparkles, LogOut, Crown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const features = [
   { icon: BookOpen, label: "Full Bible access (all versions)" },
@@ -12,19 +14,68 @@ const features = [
   { icon: Sparkles, label: "Unlimited gameplay" },
 ];
 
+const PAYSTACK_PUBLIC_KEY = "pk_test_3877141eb22c6b87bba6655a70870b8d3ddbd3a1";
+
 const Paywall = () => {
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+
+  useEffect(() => {
+    if (document.querySelector('script[src="https://js.paystack.co/v1/inline.js"]')) {
+      setScriptLoaded(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://js.paystack.co/v1/inline.js";
+    script.async = true;
+    script.onload = () => setScriptLoaded(true);
+    document.head.appendChild(script);
+  }, []);
 
   const handleBuyNow = () => {
-    toast({
-      title: "Coming Soon",
-      description: "Payment integration is being set up. Check back soon!",
+    if (!scriptLoaded || !window.PaystackPop) {
+      toast({ title: "Loading", description: "Payment system is loading, please try again." });
+      return;
+    }
+    if (!user?.email) {
+      toast({ title: "Error", description: "No email found. Please log in again.", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+
+    const handler = new window.PaystackPop();
+    handler.newTransaction({
+      key: PAYSTACK_PUBLIC_KEY,
+      email: user.email,
+      amount: 299900,
+      currency: "NGN",
+      callback: async (response) => {
+        try {
+          const { data, error } = await supabase.functions.invoke("verify-payment", {
+            body: { reference: response.reference },
+          });
+
+          if (error || !data?.success) {
+            throw new Error(data?.error || "Verification failed");
+          }
+
+          toast({ title: "🎉 Welcome to Pro!", description: "You now have full access to all features." });
+        } catch (err: any) {
+          toast({ title: "Verification Failed", description: err.message || "Please contact support.", variant: "destructive" });
+        } finally {
+          setLoading(false);
+        }
+      },
+      onClose: () => {
+        setLoading(false);
+      },
     });
   };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
-      {/* Blurred background */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
@@ -39,7 +90,6 @@ const Paywall = () => {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="relative z-10 w-full max-w-sm mx-6"
       >
-        {/* Lock icon */}
         <div className="flex justify-center mb-6">
           <motion.div
             initial={{ scale: 0 }}
@@ -51,7 +101,6 @@ const Paywall = () => {
           </motion.div>
         </div>
 
-        {/* Title */}
         <div className="text-center mb-8">
           <h1 className="font-display text-3xl text-foreground mb-2">
             Unlock Full Experience
@@ -61,7 +110,6 @@ const Paywall = () => {
           </p>
         </div>
 
-        {/* Features */}
         <div className="space-y-3 mb-8">
           {features.map((f, i) => (
             <motion.div
@@ -79,14 +127,23 @@ const Paywall = () => {
           ))}
         </div>
 
-        {/* Buttons */}
+        <div className="text-center mb-4">
+          <span className="font-display text-2xl text-foreground">₦2,999</span>
+          <span className="font-body text-sm text-muted-foreground ml-2">one-time</span>
+        </div>
+
         <div className="space-y-3">
           <Button
             onClick={handleBuyNow}
+            disabled={loading}
             className="w-full h-12 rounded-xl font-display text-base bg-primary hover:bg-primary/90 gap-2 shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.4)]"
           >
-            <Crown size={18} />
-            Buy Now — Upgrade to Pro
+            {loading ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Crown size={18} />
+            )}
+            {loading ? "Processing..." : "Buy Now — Upgrade to Pro"}
           </Button>
           <Button
             onClick={signOut}
