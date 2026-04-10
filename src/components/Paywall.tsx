@@ -22,14 +22,22 @@ const Paywall = () => {
   const [scriptLoaded, setScriptLoaded] = useState(false);
 
   useEffect(() => {
-    if (document.querySelector('script[src="https://js.paystack.co/v1/inline.js"]')) {
-      setScriptLoaded(true);
+    const existing = document.querySelector('script[src="https://js.paystack.co/v1/inline.js"]') as HTMLScriptElement | null;
+    if (existing) {
+      if (window.PaystackPop) {
+        setScriptLoaded(true);
+      } else {
+        existing.addEventListener("load", () => setScriptLoaded(true));
+      }
       return;
     }
     const script = document.createElement("script");
     script.src = "https://js.paystack.co/v1/inline.js";
     script.async = true;
     script.onload = () => setScriptLoaded(true);
+    script.onerror = () => {
+      toast({ title: "Error", description: "Failed to load payment system. Please refresh.", variant: "destructive" });
+    };
     document.head.appendChild(script);
   }, []);
 
