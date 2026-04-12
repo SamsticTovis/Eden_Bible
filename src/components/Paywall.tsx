@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Brain, Gamepad2, Flame, Sparkles, LogOut, Crown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,36 +18,16 @@ const PAYSTACK_PUBLIC_KEY = "pk_test_3877141eb22c6b87bba6655a70870b8d3ddbd3a1";
 
 const Paywall = () => {
   const { user, signOut } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-
-  useEffect(() => {
-    const existing = document.querySelector('script[src="https://js.paystack.co/v1/inline.js"]') as HTMLScriptElement | null;
-    if (existing) {
-      if (window.PaystackPop) {
-        setScriptLoaded(true);
-      } else {
-        existing.addEventListener("load", () => setScriptLoaded(true));
-      }
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://js.paystack.co/v1/inline.js";
-    script.async = true;
-    script.onload = () => setScriptLoaded(true);
-    script.onerror = () => {
-      toast({ title: "Error", description: "Failed to load payment system. Please refresh.", variant: "destructive" });
-    };
-    document.head.appendChild(script);
-  }, []);
+  const [verifying, setVerifying] = useState(false);
 
   const handleBuyNow = () => {
-    if (!scriptLoaded || !window.PaystackPop) {
-      toast({ title: "Loading", description: "Payment system is loading, please try again." });
-      return;
-    }
     if (!user?.email) {
       toast({ title: "Error", description: "No email found. Please log in again.", variant: "destructive" });
+      return;
+    }
+
+    if (!window.PaystackPop?.setup) {
+      toast({ title: "Error", description: "Payment system not loaded. Please refresh the page.", variant: "destructive" });
       return;
     }
 
@@ -57,7 +37,7 @@ const Paywall = () => {
       amount: 299900,
       currency: "NGN",
       callback: async (response: { reference: string }) => {
-        setLoading(true);
+        setVerifying(true);
         try {
           const { data, error } = await supabase.functions.invoke("verify-payment", {
             body: { reference: response.reference },
@@ -68,16 +48,18 @@ const Paywall = () => {
           }
 
           toast({ title: "🎉 Welcome to Pro!", description: "You now have full access to all features." });
+          // Plan will update via realtime subscription in useUserPlan
         } catch (err: any) {
           toast({ title: "Verification Failed", description: err.message || "Please contact support.", variant: "destructive" });
         } finally {
-          setLoading(false);
+          setVerifying(false);
         }
       },
       onClose: () => {
-        setLoading(false);
+        // User closed popup — do nothing, stay on paywall
       },
     });
+
     handler.openIframe();
   };
 
@@ -142,15 +124,15 @@ const Paywall = () => {
         <div className="space-y-3">
           <Button
             onClick={handleBuyNow}
-            disabled={loading}
+            disabled={verifying}
             className="w-full h-12 rounded-xl font-display text-base bg-primary hover:bg-primary/90 gap-2 shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.4)]"
           >
-            {loading ? (
+            {verifying ? (
               <Loader2 size={18} className="animate-spin" />
             ) : (
               <Crown size={18} />
             )}
-            {loading ? "Processing..." : "Buy Now — Upgrade to Pro"}
+            {verifying ? "Verifying payment..." : "Buy Now — Upgrade to Pro"}
           </Button>
           <Button
             onClick={signOut}
