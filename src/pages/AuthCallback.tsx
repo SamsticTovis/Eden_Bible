@@ -6,18 +6,27 @@ const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    supabase.auth.onAuthStateChange((event) => {
+    // Set up listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
         navigate("/", { replace: true });
       }
     });
 
-    // Also handle the case where session is already set
+    // Check if session already exists
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate("/", { replace: true });
       }
     });
+
+    // Fallback: if nothing happens within 5 seconds, go home anyway
+    const timeout = setTimeout(() => navigate("/", { replace: true }), 5000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, [navigate]);
 
   return (
