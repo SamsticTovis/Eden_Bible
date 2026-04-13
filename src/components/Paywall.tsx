@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Brain, Gamepad2, Flame, Sparkles, LogOut, Crown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,29 +15,85 @@ const features = [
 ];
 
 const PAYSTACK_PUBLIC_KEY = "pk_test_3877141eb22c6b87bba6655a70870b8d3ddbd3a1";
+const PAYSTACK_AMOUNT = 299900;
+const PAYSTACK_CURRENCY = "NGN";
+const PAYSTACK_SCRIPT_SRC = "https://js.paystack.co/v1/inline.js";
 
-const Paywall = () => {
+let paystackScriptPromise: Promise<void> | null = null;
+
+const getPaystackSetup = () => {
+  if (typeof window === "undefined") return null;
+
+  return typeof window.PaystackPop?.setup === "function"
+    ? window.PaystackPop.setup.bind(window.PaystackPop)
+    : null;
+};
+
+const reloadPaystackScript = async () => {
+  if (getPaystackSetup()) return;
+
+  if (!paystackScriptPromise) {
+    paystackScriptPromise = new Promise<void>((resolve, reject) => {
+      document
+        .querySelectorAll<HTMLScriptElement>(`script[src^="${PAYSTACK_SCRIPT_SRC}"]`)
+        .forEach((script) => script.remove());
+
+      const script = document.createElement("script");
+      script.src = `${PAYSTACK_SCRIPT_SRC}?retry=${Date.now()}`;
+      script.async = true;
+
+      script.onload = () => {
+        if (getPaystackSetup()) {
+          resolve();
+          return;
+        }
+
+        reject(new Error("Payment service loaded, but checkout is still unavailable."));
+      };
+
+      script.onerror = () => reject(new Error("Unable to load the payment service."));
+
+      document.head.appendChild(script);
+    }).finally(() => {
+      paystackScriptPromise = null;
+    });
+  }
+
+  await paystackScriptPromise;
+};
+
+interface PaywallProps {
+  onUnlocked?: () => Promise<void> | void;
+}
+
+const Paywall = ({ onUnlocked }: PaywallProps) => {
   const { user, signOut } = useAuth();
   const [verifying, setVerifying] = useState(false);
+  const openingRef = useRef(false);
 
-  const handleBuyNow = () => {
-    if (!user?.email) {
-      toast({ title: "Error", description: "No email found. Please log in again.", variant: "destructive" });
-      return;
+  useEffect(() => {
+    if (getPaystackSetup()) return;
+
+    void reloadPaystackScript().catch((error) => {
+      console.error("Failed to preload Paystack", error);
+    });
+  }, []);
+
+  const openPaystackPopup = useCallback((email: string) => {
+    const setup = getPaystackSetup();
+
+    if (!setup) {
+      throw new Error("Payment service is unavailable. Please refresh and try again.");
     }
 
-    if (!window.PaystackPop?.setup) {
-      toast({ title: "Error", description: "Payment system not loaded. Please refresh the page.", variant: "destructive" });
-      return;
-    }
-
-    const handler = window.PaystackPop.setup({
+    const handler = setup({
       key: PAYSTACK_PUBLIC_KEY,
-      email: user.email,
-      amount: 299900,
-      currency: "NGN",
+      email,
+      amount: PAYSTACK_AMOUNT,
+      currency: PAYSTACK_CURRENCY,
       callback: async (response: { reference: string }) => {
         setVerifying(true);
+
         try {
           const { data, error } = await supabase.functions.invoke("verify-payment", {
             body: { reference: response.reference },
@@ -47,20 +103,70 @@ const Paywall = () => {
             throw new Error(data?.error || "Verification failed");
           }
 
+          await onUnlocked?.();
+
           toast({ title: "🎉 Welcome to Pro!", description: "You now have full access to all features." });
-          // Plan will update via realtime subscription in useUserPlan
         } catch (err: any) {
+          console.error("Paystack verification failed", err);
           toast({ title: "Verification Failed", description: err.message || "Please contact support.", variant: "destructive" });
         } finally {
+          openingRef.current = false;
           setVerifying(false);
         }
       },
       onClose: () => {
-        // User closed popup — do nothing, stay on paywall
+        openingRef.current = false;
+        setVerifying(false);
+        toast({ title: "Payment cancelled", description: "You can try again whenever you're ready." });
       },
     });
 
+    if (typeof handler?.openIframe !== "function") {
+      throw new Error("Unable to start checkout right now.");
+    }
+
     handler.openIframe();
+  }, [onUnlocked]);
+
+  const handleBuyNow = () => {
+    const email = user?.email?.trim();
+
+    if (openingRef.current || verifying) {
+      return;
+    }
+
+    if (!email) {
+      toast({ title: "Error", description: "No email found. Please log in again.", variant: "destructive" });
+      return;
+    }
+
+    if (!Number.isFinite(PAYSTACK_AMOUNT) || PAYSTACK_AMOUNT <= 0) {
+      toast({ title: "Error", description: "Invalid payment amount. Please contact support.", variant: "destructive" });
+      return;
+    }
+
+    openingRef.current = true;
+
+    try {
+      openPaystackPopup(email);
+      return;
+    } catch (error) {
+      console.error("Paystack checkout launch failed", error);
+    }
+
+    void reloadPaystackScript()
+      .then(() => {
+        openPaystackPopup(email);
+      })
+      .catch((error: any) => {
+        openingRef.current = false;
+        console.error("Paystack checkout recovery failed", error);
+        toast({
+          title: "Payment unavailable",
+          description: error?.message || "We couldn't open checkout. Please refresh and try again.",
+          variant: "destructive",
+        });
+      });
   };
 
   return (

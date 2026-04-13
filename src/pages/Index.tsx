@@ -38,7 +38,7 @@ const tabSwitch = {
 
 const Index = () => {
   const { user, loading, signOut, isGuest, requireAuth } = useAuth();
-  const { hasAccess, isPro, isAdmin, loading: planLoading } = useUserPlan();
+  const { hasAccess, isPro, isAdmin, loading: planLoading, refresh } = useUserPlan();
   const [tab, setTab] = useState<AppTab>("home");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -65,7 +65,7 @@ const Index = () => {
 
   // Show paywall for authenticated free users (not admin, not guest)
   if (user && !isGuest && !hasAccess) {
-    return <Paywall />;
+    return <Paywall onUnlocked={refresh} />;
   }
 
   const handleOpenSettings = () => {
