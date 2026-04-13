@@ -94,31 +94,33 @@ const Paywall = ({ onUnlocked }: PaywallProps) => {
       email,
       amount: PAYSTACK_AMOUNT,
       currency: PAYSTACK_CURRENCY,
-      callback: async (response: { reference: string }) => {
+      callback: function (response: { reference: string }) {
         paymentCompletedRef.current = true;
         setVerifying(true);
 
-        try {
-          const { data, error } = await supabase.functions.invoke("verify-payment", {
-            body: { reference: response.reference },
-          });
+        (async () => {
+          try {
+            const { data, error } = await supabase.functions.invoke("verify-payment", {
+              body: { reference: response.reference },
+            });
 
-          if (error || !data?.success) {
-            throw new Error(data?.error || "Verification failed");
+            if (error || !data?.success) {
+              throw new Error(data?.error || "Verification failed");
+            }
+
+            await onUnlocked?.();
+
+            toast({ title: "🎉 Welcome to Pro!", description: "You now have full access to all features." });
+          } catch (err: any) {
+            console.error("Paystack verification failed", err);
+            toast({ title: "Verification Failed", description: err.message || "Please contact support.", variant: "destructive" });
+          } finally {
+            openingRef.current = false;
+            setVerifying(false);
           }
-
-          await onUnlocked?.();
-
-          toast({ title: "🎉 Welcome to Pro!", description: "You now have full access to all features." });
-        } catch (err: any) {
-          console.error("Paystack verification failed", err);
-          toast({ title: "Verification Failed", description: err.message || "Please contact support.", variant: "destructive" });
-        } finally {
-          openingRef.current = false;
-          setVerifying(false);
-        }
+        })();
       },
-      onClose: () => {
+      onClose: function () {
         if (paymentCompletedRef.current) {
           return;
         }
