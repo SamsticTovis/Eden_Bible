@@ -70,6 +70,7 @@ const Paywall = ({ onUnlocked }: PaywallProps) => {
   const { user, signOut } = useAuth();
   const [verifying, setVerifying] = useState(false);
   const openingRef = useRef(false);
+  const paymentCompletedRef = useRef(false);
 
   useEffect(() => {
     if (getPaystackSetup()) return;
@@ -80,6 +81,8 @@ const Paywall = ({ onUnlocked }: PaywallProps) => {
   }, []);
 
   const openPaystackPopup = useCallback((email: string) => {
+    paymentCompletedRef.current = false;
+
     const setup = getPaystackSetup();
 
     if (!setup) {
@@ -92,6 +95,7 @@ const Paywall = ({ onUnlocked }: PaywallProps) => {
       amount: PAYSTACK_AMOUNT,
       currency: PAYSTACK_CURRENCY,
       callback: async (response: { reference: string }) => {
+        paymentCompletedRef.current = true;
         setVerifying(true);
 
         try {
@@ -115,6 +119,10 @@ const Paywall = ({ onUnlocked }: PaywallProps) => {
         }
       },
       onClose: () => {
+        if (paymentCompletedRef.current) {
+          return;
+        }
+
         openingRef.current = false;
         setVerifying(false);
         toast({ title: "Payment cancelled", description: "You can try again whenever you're ready." });
