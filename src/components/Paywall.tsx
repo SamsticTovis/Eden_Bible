@@ -120,7 +120,7 @@ const Paywall = ({ onUnlocked }: PaywallProps) => {
           }
         })();
       },
-      onClose: () => {
+      onClose: function () {
         if (paymentCompletedRef.current) {
           return;
         }
