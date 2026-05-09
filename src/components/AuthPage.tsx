@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, User, ArrowRight, Eye, EyeOff, UserX } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, Eye, EyeOff, UserX, Apple } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,6 +78,20 @@ const AuthPage = () => {
     }
   };
 
+  const handleApple = async () => {
+    setLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("apple", {
+        redirect_uri: `${window.location.origin}/auth/callback`,
+      });
+      if (result.error) throw result.error;
+      if (result.redirected) return;
+    } catch (e: any) {
+      toast({ title: e.message || "Apple sign-in failed", variant: "destructive" });
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <motion.div
@@ -106,6 +120,15 @@ const AuthPage = () => {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
             Continue with Google
+          </Button>
+          <Button
+            onClick={handleApple}
+            disabled={loading}
+            variant="outline"
+            className="w-full rounded-xl h-12 font-body text-sm gap-3 border-border hover:bg-muted transition-all"
+          >
+            <Apple size={18} className="fill-foreground" />
+            Continue with Apple
           </Button>
         </div>
 
