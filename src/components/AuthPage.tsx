@@ -121,6 +121,15 @@ const AuthPage = () => {
             </svg>
             Continue with Google
           </Button>
+          <Button
+            onClick={handleApple}
+            disabled={loading}
+            variant="outline"
+            className="w-full rounded-xl h-12 font-body text-sm gap-3 border-border hover:bg-muted transition-all"
+          >
+            <Apple size={18} className="fill-foreground" />
+            Continue with Apple
+          </Button>
         </div>
 
         <div className="flex items-center gap-3 mb-6">
