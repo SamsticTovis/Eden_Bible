@@ -153,18 +153,24 @@ const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles, onOpenLe
   ];
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
-      {/* Greeting */}
+    <div className="max-w-md mx-auto space-y-7">
+      {/* Greeting — premium navy hero */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center"
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="relative overflow-hidden rounded-3xl bg-gradient-navy text-primary-foreground p-6 shadow-navy"
       >
-        <h2 className="font-display text-2xl text-foreground mb-1">Welcome to Eden</h2>
-        <p className="font-body text-sm text-muted-foreground">{greeting} ✨</p>
+        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-gradient-gold-glow opacity-70 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+        <div className="relative">
+          <p className="font-body text-[11px] uppercase tracking-[0.18em] text-primary/80 mb-1.5">Eden Bible</p>
+          <h2 className="font-display text-3xl text-primary-foreground/95 mb-1 leading-tight">{greeting}</h2>
+          <p className="font-body text-sm text-primary-foreground/65">A peaceful word awaits you today.</p>
+        </div>
       </motion.div>
 
-      {/* SECTION 1 — User Progress Stats */}
+      {/* Stat row */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -174,16 +180,16 @@ const HomeDashboard = ({ onNavigate, onOpenAIChat, onOpenPrayerCircles, onOpenLe
         {statCards.map((stat, i) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 + i * 0.05 }}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-card border border-border shadow-soft"
+            transition={{ delay: 0.1 + i * 0.04 }}
+            className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-card border border-border/60 shadow-soft hover:shadow-gold/30 transition-shadow"
           >
             <div className={`w-9 h-9 rounded-xl ${stat.bg} flex items-center justify-center`}>
-              <stat.icon size={18} className={stat.color} />
+              <stat.icon size={17} className={stat.color} />
             </div>
             <span className="font-display text-base text-foreground leading-tight">{stat.value}</span>
-            <span className="font-body text-[10px] text-muted-foreground uppercase tracking-wider">{stat.label}</span>
+            <span className="font-body text-[9.5px] text-muted-foreground uppercase tracking-wider">{stat.label}</span>
           </motion.div>
         ))}
       </motion.div>
