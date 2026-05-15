@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,93 +6,134 @@
 
 @layer base {
   :root {
-    --background: 40 25% 97%;
-    --foreground: 220 20% 14%;
+    /* Premium Navy + Gold + Cream identity */
+    --background: 40 33% 96%;          /* warm cream #F7F4EE */
+    --foreground: 218 45% 12%;         /* deep navy text */
 
-    --card: 40 30% 99%;
-    --card-foreground: 220 20% 14%;
+    --card: 0 0% 100%;                 /* soft white */
+    --card-foreground: 218 45% 12%;
 
-    --popover: 40 30% 99%;
-    --popover-foreground: 220 20% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 218 45% 12%;
 
-    --primary: 32 65% 48%;
-    --primary-foreground: 40 30% 99%;
+    --primary: 40 62% 57%;             /* rich gold #D4A64F */
+    --primary-foreground: 218 70% 14%;
 
-    --secondary: 220 14% 92%;
-    --secondary-foreground: 220 20% 22%;
+    --secondary: 40 25% 92%;           /* cream secondary */
+    --secondary-foreground: 218 45% 18%;
 
-    --muted: 220 12% 93%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 40 20% 93%;
+    --muted-foreground: 218 12% 42%;   /* refined gray #8A8A8A-ish */
 
-    --accent: 14 55% 52%;
-    --accent-foreground: 40 30% 99%;
+    --accent: 218 70% 14%;             /* deep royal navy #0A1D3A */
+    --accent-foreground: 40 62% 70%;
 
-    --destructive: 0 72% 55%;
+    --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 14% 90%;
-    --input: 220 14% 90%;
-    --ring: 32 65% 48%;
+    --border: 40 18% 88%;
+    --input: 40 18% 88%;
+    --ring: 40 62% 57%;
 
-    --radius: 0.875rem;
+    --radius: 1.125rem;
 
-    --warm-glow: 38 75% 56%;
-    --warm-deep: 220 25% 22%;
-    --serene: 200 30% 55%;
-    --joy: 45 80% 55%;
-    --peace: 155 30% 48%;
-    --comfort: 14 55% 50%;
-    --hope: 32 65% 58%;
+    /* Brand essentials */
+    --navy: 218 70% 14%;
+    --navy-deep: 218 75% 9%;
+    --gold: 40 62% 57%;
+    --gold-soft: 40 70% 78%;
+    --gold-glow: 40 80% 60%;
+    --cream: 40 33% 96%;
 
-    --gradient-sunrise: linear-gradient(135deg, hsl(32 65% 48%), hsl(14 55% 52%), hsl(45 80% 55%));
-    --gradient-warm: linear-gradient(180deg, hsl(40 25% 97%), hsl(220 14% 94%));
-    --gradient-golden: linear-gradient(135deg, hsl(38 75% 56% / 0.1), hsl(32 65% 48% / 0.04));
+    /* Mood (kept, retuned to navy/gold harmony) */
+    --warm-glow: 40 80% 60%;
+    --warm-deep: 218 75% 9%;
+    --serene: 210 35% 50%;
+    --joy: 42 75% 55%;
+    --peace: 160 25% 42%;
+    --comfort: 14 45% 50%;
+    --hope: 40 62% 57%;
 
-    --shadow-warm: 0 4px 24px -6px hsl(32 65% 48% / 0.15);
-    --shadow-soft: 0 1px 8px -2px hsl(220 20% 14% / 0.06);
-    --shadow-glow: 0 0 32px -8px hsl(32 65% 48% / 0.2);
+    /* Premium gradients */
+    --gradient-sunrise: linear-gradient(135deg, hsl(218 70% 14%), hsl(218 60% 22%) 60%, hsl(40 62% 57%));
+    --gradient-warm: linear-gradient(180deg, hsl(40 33% 97%), hsl(40 28% 93%));
+    --gradient-golden: linear-gradient(135deg, hsl(40 62% 57% / 0.18), hsl(40 80% 60% / 0.04));
+    --gradient-navy: linear-gradient(160deg, hsl(218 70% 14%), hsl(218 75% 9%));
+    --gradient-gold-glow: radial-gradient(circle at 50% 50%, hsl(40 80% 60% / 0.35), transparent 70%);
 
-    --font-display: 'DM Serif Display', Georgia, serif;
+    /* Premium shadows */
+    --shadow-warm: 0 8px 30px -10px hsl(218 70% 14% / 0.18);
+    --shadow-soft: 0 1px 12px -3px hsl(218 70% 14% / 0.08);
+    --shadow-glow: 0 0 40px -8px hsl(40 80% 60% / 0.45);
+    --shadow-gold: 0 6px 24px -8px hsl(40 62% 57% / 0.45);
+    --shadow-navy: 0 12px 40px -12px hsl(218 70% 14% / 0.35);
+    --shadow-elevated: 0 20px 50px -20px hsl(218 70% 14% / 0.25), 0 2px 6px -1px hsl(218 70% 14% / 0.08);
+
+    --font-display: 'Cormorant Garamond', 'DM Serif Display', Georgia, serif;
     --font-body: 'Inter', system-ui, sans-serif;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 40 33% 96%;
+    --sidebar-foreground: 218 45% 18%;
+    --sidebar-primary: 218 70% 14%;
+    --sidebar-primary-foreground: 40 33% 96%;
+    --sidebar-accent: 40 25% 92%;
+    --sidebar-accent-foreground: 218 45% 18%;
+    --sidebar-border: 40 18% 88%;
+    --sidebar-ring: 40 62% 57%;
   }
 
   .dark {
-    --background: 220 18% 7%;
-    --foreground: 220 14% 90%;
-    --card: 220 16% 10%;
-    --card-foreground: 220 14% 90%;
-    --popover: 220 16% 10%;
-    --popover-foreground: 220 14% 90%;
-    --primary: 32 65% 48%;
-    --primary-foreground: 220 18% 7%;
-    --secondary: 220 12% 16%;
-    --secondary-foreground: 220 14% 85%;
-    --muted: 220 10% 14%;
-    --muted-foreground: 220 10% 50%;
-    --accent: 14 50% 46%;
-    --accent-foreground: 40 30% 98%;
-    --destructive: 0 62% 30%;
+    --background: 218 75% 8%;          /* deep navy */
+    --foreground: 40 30% 92%;          /* cream text */
+
+    --card: 218 60% 12%;
+    --card-foreground: 40 30% 92%;
+
+    --popover: 218 60% 12%;
+    --popover-foreground: 40 30% 92%;
+
+    --primary: 40 70% 60%;             /* gold pops on navy */
+    --primary-foreground: 218 75% 8%;
+
+    --secondary: 218 45% 16%;
+    --secondary-foreground: 40 30% 90%;
+
+    --muted: 218 40% 14%;
+    --muted-foreground: 40 15% 65%;
+
+    --accent: 40 70% 60%;
+    --accent-foreground: 218 75% 8%;
+
+    --destructive: 0 60% 40%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 12% 18%;
-    --input: 220 12% 18%;
-    --ring: 32 65% 48%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --border: 218 35% 20%;
+    --input: 218 35% 20%;
+    --ring: 40 70% 60%;
+
+    --warm-glow: 40 80% 62%;
+    --warm-deep: 218 75% 8%;
+
+    --gradient-sunrise: linear-gradient(135deg, hsl(218 75% 8%), hsl(218 60% 18%) 60%, hsl(40 70% 60%));
+    --gradient-warm: linear-gradient(180deg, hsl(218 75% 8%), hsl(218 70% 11%));
+    --gradient-golden: linear-gradient(135deg, hsl(40 70% 60% / 0.2), hsl(40 80% 62% / 0.05));
+    --gradient-navy: linear-gradient(160deg, hsl(218 70% 14%), hsl(218 75% 6%));
+
+    --shadow-warm: 0 8px 30px -10px hsl(0 0% 0% / 0.5);
+    --shadow-soft: 0 1px 12px -3px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 40px -8px hsl(40 80% 60% / 0.5);
+    --shadow-gold: 0 6px 24px -8px hsl(40 70% 60% / 0.55);
+    --shadow-navy: 0 12px 40px -12px hsl(0 0% 0% / 0.55);
+    --shadow-elevated: 0 20px 50px -20px hsl(0 0% 0% / 0.6), 0 2px 6px -1px hsl(0 0% 0% / 0.3);
+
+    --sidebar-background: 218 75% 8%;
+    --sidebar-foreground: 40 30% 90%;
+    --sidebar-primary: 40 70% 60%;
+    --sidebar-primary-foreground: 218 75% 8%;
+    --sidebar-accent: 218 45% 16%;
+    --sidebar-accent-foreground: 40 30% 90%;
+    --sidebar-border: 218 35% 20%;
+    --sidebar-ring: 40 70% 60%;
   }
 }
 
@@ -101,15 +142,36 @@
     @apply border-border;
   }
 
+  html {
+    /* subtle ambient cream-to-white wash for premium depth */
+    background:
+      radial-gradient(ellipse at top, hsl(40 60% 92% / 0.6), transparent 60%),
+      radial-gradient(ellipse at bottom right, hsl(40 80% 80% / 0.18), transparent 55%),
+      hsl(var(--background));
+    background-attachment: fixed;
+  }
+
+  .dark html,
+  html.dark {
+    background:
+      radial-gradient(ellipse at top, hsl(218 60% 18% / 0.5), transparent 60%),
+      radial-gradient(ellipse at bottom right, hsl(40 70% 50% / 0.08), transparent 55%),
+      hsl(var(--background));
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: transparent;
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.005em;
   }
 
   h1, h2, h3, h4 {
     font-family: var(--font-display);
+    letter-spacing: -0.015em;
+    font-weight: 600;
   }
 }
 
@@ -121,27 +183,40 @@
     background-clip: text;
   }
 
-  .bg-gradient-sunrise {
-    background: var(--gradient-sunrise);
+  .text-gradient-gold {
+    background: linear-gradient(135deg, hsl(40 62% 50%), hsl(40 80% 65%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  .bg-gradient-warm {
-    background: var(--gradient-warm);
+  .bg-gradient-sunrise { background: var(--gradient-sunrise); }
+  .bg-gradient-warm    { background: var(--gradient-warm); }
+  .bg-gradient-golden  { background: var(--gradient-golden); }
+  .bg-gradient-navy    { background: var(--gradient-navy); }
+  .bg-gradient-gold-glow { background: var(--gradient-gold-glow); }
+
+  .shadow-warm     { box-shadow: var(--shadow-warm); }
+  .shadow-soft     { box-shadow: var(--shadow-soft); }
+  .shadow-glow     { box-shadow: var(--shadow-glow); }
+  .shadow-gold     { box-shadow: var(--shadow-gold); }
+  .shadow-navy     { box-shadow: var(--shadow-navy); }
+  .shadow-elevated { box-shadow: var(--shadow-elevated); }
+
+  .glass {
+    background: hsl(0 0% 100% / 0.65);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid hsl(218 30% 80% / 0.25);
   }
 
-  .bg-gradient-golden {
-    background: var(--gradient-golden);
+  .dark .glass {
+    background: hsl(218 60% 12% / 0.55);
+    border: 1px solid hsl(40 40% 60% / 0.12);
   }
 
-  .shadow-warm {
-    box-shadow: var(--shadow-warm);
-  }
-
-  .shadow-soft {
-    box-shadow: var(--shadow-soft);
-  }
-
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
+  .gold-divider {
+    background: linear-gradient(90deg, transparent, hsl(40 62% 57% / 0.5), transparent);
+    height: 1px;
   }
 }
