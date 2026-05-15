@@ -132,16 +132,16 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <header className="bg-card/90 backdrop-blur-md border-b border-border sticky top-0 z-50">
-        <div className="flex items-center justify-between px-5 pt-8 pb-3 max-w-lg mx-auto">
+    <div className="min-h-screen pb-28">
+      <header className="glass border-b border-border/40 sticky top-0 z-40">
+        <div className="flex items-center justify-between px-5 pt-7 pb-3 max-w-lg mx-auto">
           <div className="flex items-center gap-2">
             <motion.h1
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="font-display text-xl text-foreground tracking-tight"
+              className="font-display text-[1.45rem] text-foreground tracking-tight"
             >
-              Eden Bible
+              Eden <span className="text-gradient-gold">Bible</span>
             </motion.h1>
             {isGuest && (
               <span className="px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-body text-[10px] font-medium uppercase tracking-wider">
@@ -149,21 +149,21 @@ const Index = () => {
               </span>
             )}
             {isPro && !isAdmin && (
-              <span className="px-2 py-0.5 rounded-md bg-primary/15 text-primary font-body text-[10px] font-semibold uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/30 font-body text-[10px] font-semibold uppercase tracking-[0.12em] shadow-[0_0_12px_-2px_hsl(var(--primary)/0.5)]">
                 PRO
               </span>
             )}
             {isAdmin && (
-              <span className="px-2 py-0.5 rounded-md bg-accent/15 text-accent font-body text-[10px] font-semibold uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded-md bg-accent/15 text-accent border border-accent/30 font-body text-[10px] font-semibold uppercase tracking-wider">
                 ADMIN
               </span>
             )}
           </div>
           <button
             onClick={() => setDrawerOpen(true)}
-            className="p-2 rounded-xl hover:bg-muted transition-colors active:scale-95"
+            className="p-2 rounded-xl hover:bg-muted/70 transition-colors active:scale-95"
           >
-            <Menu size={20} className="text-muted-foreground" />
+            <Menu size={20} className="text-foreground/70" />
           </button>
         </div>
       </header>
