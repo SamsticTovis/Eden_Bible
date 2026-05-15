@@ -263,16 +263,16 @@ const AIComfortChat = ({ onClose }: { onClose: () => void }) => {
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 glass rounded-2xl p-1.5 shadow-soft">
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send(input)}
           placeholder="Share what's on your heart..."
-          className="flex-1 bg-card/80 backdrop-blur-sm border-border font-body text-sm rounded-xl"
+          className="flex-1 bg-transparent border-0 font-body text-sm rounded-xl focus-visible:ring-0 focus-visible:ring-offset-0"
           disabled={isLoading}
         />
-        <Button onClick={() => send(input)} disabled={!input.trim() || isLoading} size="icon" className="rounded-xl bg-primary hover:bg-primary/90 transition-all shadow-[0_2px_10px_-2px_hsl(var(--primary)/0.4)]">
+        <Button onClick={() => send(input)} disabled={!input.trim() || isLoading} size="icon" className="rounded-xl bg-primary hover:bg-primary/90 transition-all shadow-gold">
           <Send size={16} />
         </Button>
       </div>
