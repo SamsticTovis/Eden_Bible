@@ -19,72 +19,55 @@ const tabs: { id: AppTab; label: string; icon: typeof Home }[] = [
 
 const BottomNav = ({ active, onChange }: BottomNavProps) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom">
-      {/* Glassmorphism background */}
-      <div className="mx-3 mb-2 rounded-2xl bg-card/70 backdrop-blur-2xl border border-border/50 shadow-[0_-4px_30px_-8px_hsl(var(--primary)/0.12)]">
-        <div className="flex items-center justify-around max-w-lg mx-auto py-1.5 px-1 relative">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom pointer-events-none">
+      <div className="mx-3 mb-3 pointer-events-auto rounded-[1.75rem] glass shadow-elevated">
+        <div className="flex items-center justify-around max-w-lg mx-auto py-2 px-2 relative">
           {tabs.map(({ id, label, icon: Icon }) => {
             const isActive = active === id;
             return (
               <motion.button
                 key={id}
                 onClick={() => onChange(id)}
-                whileTap={{ scale: 0.85 }}
-                className="flex flex-col items-center gap-0.5 px-2 py-1.5 relative min-w-0 z-10"
+                whileTap={{ scale: 0.92 }}
+                className="flex flex-col items-center gap-1 px-2.5 py-2 relative min-w-0 z-10 flex-1"
               >
-                {/* Active glow background */}
+                {/* Active filled pill */}
                 {isActive && (
                   <motion.div
-                    layoutId="nav-glow"
-                    className="absolute inset-0 rounded-2xl"
+                    layoutId="nav-active-pill"
+                    className="absolute inset-x-1 inset-y-0.5 rounded-2xl"
                     style={{
-                      background: "radial-gradient(circle at center 30%, hsl(var(--primary) / 0.15), transparent 70%)",
+                      background: "linear-gradient(180deg, hsl(var(--primary) / 0.18), hsl(var(--primary) / 0.08))",
+                      border: "1px solid hsl(var(--primary) / 0.35)",
+                      boxShadow: "0 6px 20px -8px hsl(var(--primary) / 0.55), inset 0 1px 0 hsl(0 0% 100% / 0.4)",
                     }}
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.7 }}
                   />
                 )}
 
-                {/* Floating pill indicator */}
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-pill"
-                    className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-primary shadow-[0_0_8px_2px_hsl(var(--primary)/0.4)]"
-                    transition={{ type: "spring", stiffness: 400, damping: 28 }}
-                  />
-                )}
-
-                {/* Icon with scale + lift */}
+                {/* Icon */}
                 <motion.div
-                  animate={{
-                    scale: isActive ? 1.25 : 1,
-                    y: isActive ? -2 : 0,
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 500,
-                    damping: 22,
-                    mass: 0.6,
-                  }}
+                  animate={{ scale: isActive ? 1.12 : 1, y: isActive ? -1 : 0 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 26 }}
                   className="relative z-10"
                 >
                   <Icon
                     size={20}
-                    strokeWidth={isActive ? 2.4 : 1.5}
+                    strokeWidth={isActive ? 2.2 : 1.6}
                     className={`transition-colors duration-300 ${
-                      isActive ? "text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)]" : "text-muted-foreground"
+                      isActive
+                        ? "text-primary drop-shadow-[0_0_10px_hsl(var(--primary)/0.6)]"
+                        : "text-muted-foreground/70"
                     }`}
                   />
                 </motion.div>
 
-                {/* Label with fade */}
+                {/* Label */}
                 <motion.span
-                  animate={{
-                    opacity: isActive ? 1 : 0.5,
-                    y: isActive ? -1 : 0,
-                  }}
-                  transition={{ duration: 0.25 }}
-                  className={`relative z-10 text-[9px] font-body font-semibold tracking-wide transition-colors duration-300 ${
-                    isActive ? "text-primary" : "text-muted-foreground"
+                  animate={{ opacity: isActive ? 1 : 0.55 }}
+                  transition={{ duration: 0.3 }}
+                  className={`relative z-10 text-[9.5px] font-body tracking-wide transition-colors duration-300 ${
+                    isActive ? "text-primary font-semibold" : "text-muted-foreground/80 font-medium"
                   }`}
                 >
                   {label}
