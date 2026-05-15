@@ -51,27 +51,11 @@ const AuthPage = () => {
   const handleGoogle = async () => {
     setLoading(true);
     try {
-      const host = window.location.hostname;
-      const isLovableHost =
-        host.endsWith(".lovable.app") || host.endsWith(".lovableproject.com");
-
-      if (isLovableHost) {
-        // Use Lovable Cloud managed OAuth (proxy via /~oauth) on Lovable domains
-        const result = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: `${window.location.origin}/auth/callback`,
-        });
-        if (result.error) throw result.error;
-        if (result.redirected) return;
-      } else {
-        // On Vercel / custom hosts, go straight through Supabase OAuth
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
-        if (error) throw error;
-      }
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth/callback`,
+      });
+      if (result.error) throw result.error;
+      if (result.redirected) return;
     } catch (e: any) {
       toast({ title: e.message || "Google sign-in failed", variant: "destructive" });
       setLoading(false);
