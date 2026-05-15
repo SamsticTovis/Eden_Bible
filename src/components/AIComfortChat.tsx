@@ -44,36 +44,38 @@ const EdenAvatar = ({ mood, isTyping }: { mood: EdenMood; isTyping: boolean }) =
   const cfg = moodConfig[mood];
   return (
     <motion.div
-      animate={isTyping ? { rotate: [0, -3, 3, -2, 0] } : {}}
-      transition={{ duration: 1.5, repeat: isTyping ? Infinity : 0 }}
+      animate={isTyping ? { y: [0, -2, 0] } : { y: [0, -1.5, 0] }}
+      transition={{ duration: isTyping ? 2 : 5, repeat: Infinity, ease: "easeInOut" }}
       className="flex-shrink-0"
     >
-      <svg width="36" height="36" viewBox="0 0 48 48" fill="none">
-        <circle cx="24" cy="24" r="20" fill={cfg.color} />
-        <circle cx="24" cy="24" r="20" fill="url(#avatarGrad)" />
-        <circle cx="14" cy="27" r="3" fill="hsl(var(--accent))" opacity={cfg.blush} />
-        <circle cx="34" cy="27" r="3" fill="hsl(var(--accent))" opacity={cfg.blush} />
-        <motion.g animate={{ scaleY: [1, 0.1, 1] }} transition={{ duration: 0.2, repeat: Infinity, repeatDelay: 3.5 }} style={{ transformOrigin: "24px 22px" }}>
-          <motion.ellipse cx="18" cy="22" rx="2.5" ry={2.5 * cfg.eyeScale} fill="hsl(var(--primary-foreground))" />
-          <circle cx="19" cy="21.5" r="0.8" fill="hsl(var(--primary))" />
-          <motion.ellipse cx="30" cy="22" rx="2.5" ry={2.5 * cfg.eyeScale} fill="hsl(var(--primary-foreground))" />
-          <circle cx="31" cy="21.5" r="0.8" fill="hsl(var(--primary))" />
-        </motion.g>
-        <motion.path d={cfg.mouth} stroke="hsl(var(--primary-foreground))" strokeWidth="1.8" strokeLinecap="round" fill="none" animate={{ d: cfg.mouth }} transition={{ duration: 0.4 }} />
-        {mood === "celebratory" && (
-          <motion.g animate={{ opacity: [0, 1, 0], y: [0, -4, 0] }} transition={{ duration: 1, repeat: Infinity }}>
-            <circle cx="12" cy="12" r="1.5" fill="hsl(var(--joy))" />
-            <circle cx="36" cy="10" r="1" fill="hsl(var(--accent))" />
-            <circle cx="8" cy="18" r="1" fill="hsl(var(--primary))" />
+      <div className="relative">
+        {/* soft halo */}
+        <div className="absolute inset-0 rounded-full bg-gradient-gold-glow opacity-40 blur-md" />
+        <svg width="38" height="38" viewBox="0 0 48 48" fill="none" className="relative">
+          <circle cx="24" cy="24" r="20" fill="hsl(var(--accent))" />
+          <circle cx="24" cy="24" r="20" fill="url(#avatarGrad)" />
+          <circle cx="14" cy="28" r="2.5" fill="hsl(var(--primary))" opacity={cfg.blush * 0.7} />
+          <circle cx="34" cy="28" r="2.5" fill="hsl(var(--primary))" opacity={cfg.blush * 0.7} />
+          <motion.g animate={{ scaleY: [1, 0.08, 1] }} transition={{ duration: 0.18, repeat: Infinity, repeatDelay: 5.5, ease: "easeInOut" }} style={{ transformOrigin: "24px 22px" }}>
+            <ellipse cx="18" cy="22" rx="2.2" ry={2.2 * cfg.eyeScale} fill="hsl(var(--primary))" />
+            <ellipse cx="30" cy="22" rx="2.2" ry={2.2 * cfg.eyeScale} fill="hsl(var(--primary))" />
           </motion.g>
-        )}
-        <defs>
-          <radialGradient id="avatarGrad" cx="0.35" cy="0.3" r="0.7">
-            <stop offset="0%" stopColor="hsl(var(--warm-glow))" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="transparent" />
-          </radialGradient>
-        </defs>
-      </svg>
+          <motion.path d={cfg.mouth} stroke="hsl(var(--primary))" strokeWidth="1.6" strokeLinecap="round" fill="none" animate={{ d: cfg.mouth }} transition={{ duration: 0.6, ease: "easeInOut" }} />
+          {mood === "celebratory" && (
+            <motion.g animate={{ opacity: [0, 0.9, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+              <circle cx="12" cy="12" r="1.2" fill="hsl(var(--primary))" />
+              <circle cx="36" cy="10" r="1" fill="hsl(var(--primary))" />
+              <circle cx="8" cy="18" r="0.8" fill="hsl(var(--primary))" />
+            </motion.g>
+          )}
+          <defs>
+            <radialGradient id="avatarGrad" cx="0.35" cy="0.3" r="0.75">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="transparent" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
     </motion.div>
   );
 };
